@@ -4,6 +4,7 @@ import (
 	"crypto/sha1"
 	"flag"
 	"fmt"
+  "math/big"
 	"log"
 	"net"
 	"sync"
@@ -21,6 +22,7 @@ var (
 	mutex                sync.Mutex
 )
 
+const keySize = 4
 
 func hash(data []byte) string {
 	sha1 := sha1.Sum(data)
@@ -28,9 +30,19 @@ func hash(data []byte) string {
 	return s
 }
 
-func hashAddress(tcpAddr net.TCPAddr) api.NodeAddress {
-	return api.NodeAddress(hash([]byte(tcpAddr.String())))
+func hashStringToBigInt(elt string) *big.Int {
+    hasher := sha1.New()
+    hasher.Write([]byte(elt))
+    return new(big.Int).SetBytes(hasher.Sum(nil))
 }
+
+func hashAddress(tcpAddr net.TCPAddr) api.NodeAddress {
+  hashInt := hashStringToBigInt(tcpAddr.String())
+  // hashMod := new(big.Int).Exp(big.NewInt(2), big.NewInt(keySize), nil)
+  nodeId := new(big.Int).Mod(hashInt, big.NewInt(keySize))
+	return api.NodeAddress(nodeId.String())
+}
+
 
 // Newapi.Node creates a new Chord node with the given ID.
 func NewNode(id api.NodeAddress, addr *net.TCPAddr) (*api.Node, error) {
