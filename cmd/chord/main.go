@@ -148,6 +148,7 @@ func main() {
 	createRing := joinAddr != ""
 	// If joining an existing ring, attempt to join
 	if createRing {
+		log.Println("Creating a new ring")
 		go localNode.serve()
 	} else {
 		tcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", bindAddr, bindPort))
