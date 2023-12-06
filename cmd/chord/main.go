@@ -117,7 +117,7 @@ func main() {
 	go serve(&tp)
 
 	scanner := bufio.NewScanner(os.Stdin)
-	for {
+	for { 
 		fmt.Print("Enter command: \n")
 		// reads user input until \n by default
 		scanner.Scan()
@@ -130,11 +130,20 @@ func main() {
       switch splits[0] {
         case "set": 
           key := splits[1]
-          val := splits[2]
-          transport.SendSet(api.Key(key), api.Value(val), bindTcpAddr)
+          val := splits[2] 
+          laddr := splits[3]
+          lport := splits[4]
+          addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", laddr, lport))
+          if err != nil {
+            log.Println(err)
+          }
+          transport.SendSet(api.Key(key), api.Value(val), addr)
         case "get":
           key := splits[1]
-          val, err := transport.SendGet(api.Key(key), bindTcpAddr)
+          laddr := splits[2]
+          lport := splits[3]
+          addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", laddr, lport))
+          val, err := transport.SendGet(api.Key(key), addr)
           if err != nil {
             log.Println(err)
             continue
