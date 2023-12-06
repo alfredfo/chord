@@ -90,6 +90,7 @@ func main() {
 		log.Println(err)
 		return
 	}
+	ID = node.ID
 	// Output Chord node information
 	log.Printf("Chord node ID: %s\n", node.ID)
 	log.Printf("Bind address: %s\n", bindAddr)
