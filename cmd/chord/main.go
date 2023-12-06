@@ -145,7 +145,7 @@ func main() {
 	fmt.Printf("Bind address: %s\n", bindAddr)
 	fmt.Printf("Bind port: %d\n", bindPort)
 
-	createRing := joinAddr != ""
+	createRing := joinAddr == ""
 	// If joining an existing ring, attempt to join
 	if createRing {
 		log.Println("Creating a new ring")
