@@ -41,10 +41,14 @@ func (node *ChordNode) join() *ChordNode {
 }
 
 
-func hash(tcpAddr net.TCPAddr) string {
-	sha1 := sha1.Sum([]byte(tcpAddr.String()))
-    s := fmt.Sprintf("%x", sha1)
+func hash(data []byte) string {
+	sha1 := sha1.Sum(data)
+	s := fmt.Sprintf("%x", sha1)
 	return s
+}
+
+func hashAddress(tcpAddr net.TCPAddr) string {
+	return hash([]byte(tcpAddr.String()))
 }
 
 // NewChordNode creates a new Chord node with the given ID.
