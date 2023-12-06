@@ -12,8 +12,17 @@ import (
 	"time"
 )
 
+
 type Key string
 type NodeAddress string
+
+type JoinRPCArgs struct {
+	ID NodeAddress
+}
+
+type JoinRPCReply struct {
+	ok bool
+}
 
 var (
 	localNode            *Node
@@ -34,7 +43,9 @@ type Node struct {
 	Address *net.TCPAddr
 }
 
-func (node *Node) Join() *Node {
+func (node *Node) Join(args *JoinRPCArgs, reply *JoinRPCReply) *Node {
+	log.Printf("node with ID: %v is joining the ring\n", args.ID)
+	reply.ok = true
 	return nil
 }
 
