@@ -128,14 +128,20 @@ func main() {
 			// Here you can add a switch or if statements to handle the commands
       splits := strings.Split(command, " ")
       switch splits[0] {
-      case "set": {
+        case "set": 
           key := splits[1]
           val := splits[2]
           transport.SendSet(api.Key(key), api.Value(val), bindTcpAddr)
-      }
-      default: {
-        log.Println("not implemented") 
-      }
+        case "get":
+          key := splits[1]
+          val, err := transport.SendGet(api.Key(key), bindTcpAddr)
+          if err != nil {
+            log.Println(err)
+            continue
+          }
+          log.Printf("Value for key %v is: %v", key, val)
+        default: 
+          log.Println("not implemented") 
       }
 		} else {
 			// exit if user entered an empty string
