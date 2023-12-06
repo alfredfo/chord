@@ -21,7 +21,7 @@ type JoinRPCArgs struct {
 }
 
 type JoinRPCReply struct {
-	ok bool
+	Ok bool
 }
 
 var (
@@ -43,9 +43,9 @@ type Node struct {
 	Address *net.TCPAddr
 }
 
-func (node *Node) Join(args *JoinRPCArgs, reply *JoinRPCReply) *Node {
+func (node *Node) Join(args *JoinRPCArgs, reply *JoinRPCReply) error {
 	log.Printf("node with ID: %v is joining the ring\n", args.ID)
-	reply.ok = true
+	reply.Ok = true
 	return nil
 }
 
@@ -96,7 +96,7 @@ func NewNode(id NodeAddress, addr *net.TCPAddr) (*Node, error) {
 	}, nil
 }
 
-func call(rpcname string, addr net.TCPAddr, args interface{}, reply interface{}) error {
+func call(rpcname string, addr *net.TCPAddr, args interface{}, reply interface{}) error {
 	c, err := rpc.DialHTTP("tcp", addr.String())
 	if err != nil {
 		log.Printf("error dialing: %v", err)
@@ -162,7 +162,7 @@ func main() {
 		log.Println("Creating a new ring")
 		go localNode.serve()
 	} else {
-		tcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", bindAddr, bindPort))
+		tcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", joinAddr, joinPort))
 		if err != nil {
 			return
 		}
@@ -171,6 +171,12 @@ func main() {
 			log.Println(err)
 			return
 		}
+
+		args := JoinRPCArgs{}
+		reply := JoinRPCReply{}
+		args.ID = "3"
+		call("Node.Join", tcpAddr, &args, &reply)
+		
 	}
 
 	for !finished {
