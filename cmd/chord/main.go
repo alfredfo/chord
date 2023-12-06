@@ -12,8 +12,12 @@ import (
 	"github.com/alfredfo/chord/transport"
 )
 
+const (
+	m = 160
+)
+
 var (
-	node                 *api.Node
+	tp                   transport.TransportNode
 	stabilizeTime        time.Duration
 	fixFingersTime       time.Duration
 	checkPredecessorTime time.Duration
@@ -32,7 +36,6 @@ func hashAddress(tcpAddr net.TCPAddr) api.NodeAddress {
 	return api.NodeAddress(hash([]byte(tcpAddr.String())))
 }
 
-// Newapi.Node creates a new Chord node with the given ID.
 func NewNode(id api.NodeAddress, addr *net.TCPAddr) (*api.Node, error) {
 	if id == "" {
 		id = hashAddress(*addr)
@@ -47,10 +50,6 @@ func NewNode(id api.NodeAddress, addr *net.TCPAddr) (*api.Node, error) {
 		Address:     addr,
 	}, nil
 }
-
-const m = 160
-
-
 
 func main() {
 	// Parse command-line arguments
@@ -77,7 +76,7 @@ func main() {
 	flag.StringVar(&manualID, "i", "", "The identifier (ID) assigned to the Chord client.")
 
 	flag.Parse()
-	tpn := transport.TransportNode{}
+	tp = transport.TransportNode{}
 	var err error
 	bindTcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", bindAddr, bindPort))
 	if err != nil {
@@ -86,18 +85,18 @@ func main() {
 	}
 
 	var ID api.NodeAddress = (api.NodeAddress)(manualID)
-	node, err = NewNode(ID, bindTcpAddr)
+	node, err := NewNode(ID, bindTcpAddr)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	ID = node.ID
-	tpn.Node = node
+	tp.Node = node
 	// Output Chord node information
 	log.Printf("Chord node ID: %s\n", node.ID)
 	log.Printf("Bind address: %s\n", bindAddr)
 	log.Printf("Bind port: %d\n", bindPort)
-	go serve(&tpn)
+	go serve(&tp)
 
 	if joinAddr != "" {
 		joinTCPAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", joinAddr, joinPort))
