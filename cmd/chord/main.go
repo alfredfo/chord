@@ -10,33 +10,35 @@ import (
 	"time"
 )
 
-// ChordNode represents a node in the Chord DHT.
-type ChordNode struct {
-	ID          string
-	Successor   *ChordNode
-	Predecessor *ChordNode
-	FingerTable []*ChordNode
-	Data        map[string]string
-	Address     net.TCPAddr
+type Key string
+type NodeAddress string
+type Node struct {
+	ID          NodeAddress
+	FingerTable []NodeAddress
+	Predecessor NodeAddress
+	Successors  []NodeAddress
+
+	Bucket  map[Key]string
+	Address *net.TCPAddr
 }
 
 var (
-	localNode            *ChordNode
+	localNode            *Node
 	stabilizeTime        time.Duration
 	fixFingersTime       time.Duration
 	checkPredecessorTime time.Duration
 	mutex                sync.Mutex
 )
 
-func (node *ChordNode) findSuccessor(*int) *ChordNode {
+func (node *Node) findSuccessor(*int) *Node {
 	return nil
 }
 
-func (node *ChordNode) notify(childNode *ChordNode) {
+func (node *Node) notify(childNode *Node) {
 
 }
 
-func (node *ChordNode) join() *ChordNode {
+func (node *Node) join() *Node {
 	return nil
 }
 
@@ -46,27 +48,23 @@ func hash(data []byte) string {
 	return s
 }
 
-func hashAddress(tcpAddr net.TCPAddr) string {
-	return hash([]byte(tcpAddr.String()))
+func hashAddress(tcpAddr net.TCPAddr) NodeAddress {
+	return NodeAddress(hash([]byte(tcpAddr.String())))
 }
 
-// NewChordNode creates a new Chord node with the given ID.
-func NewChordNode(id string, addr string, port int) (*ChordNode, error) {
-	tcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", addr, port))
-	if err != nil {
-		return nil, err
-	}
+// NewNode creates a new Chord node with the given ID.
+func NewNode(id NodeAddress, addr *net.TCPAddr) (*Node, error) {
 	if id == "" {
 		id = hashAddress(*tcpAddr)
 	}
 
-	return &ChordNode{
+	return &Node{
 		ID:          id,
-		Successor:   nil,
-		Predecessor: nil,
-		FingerTable: make([]*ChordNode, m),
-		Data:        make(map[string]string),
-		Address:     *tcpAddr,
+		Successors:  nil,
+		Predecessor: "",
+		FingerTable: make([]NodeAddress, m),
+		Bucket:      make(map[Key]string),
+		Address:     tcpAddr,
 	}, nil
 }
 
@@ -83,7 +81,7 @@ func main() {
 		fixFingersTime       int
 		checkPredecessorTime int
 		numSuccessors        int
-		ID                   string
+		manualID             string
 	)
 
 	flag.StringVar(&bindAddr, "a", "0.0.0.0", "The IP address that the Chord client will bind to and advertise.")
@@ -94,17 +92,17 @@ func main() {
 	flag.IntVar(&fixFingersTime, "tff", 500, "Time in milliseconds between invocations of ‘fix fingers’.")
 	flag.IntVar(&checkPredecessorTime, "tcp", 500, "Time in milliseconds between invocations of ‘check predecessor’.")
 	flag.IntVar(&numSuccessors, "r", 4, "Number of successors maintained by the Chord client.")
-	flag.StringVar(&ID, "i", "", "The identifier (ID) assigned to the Chord client.")
+	flag.StringVar(&manualID, "i", "", "The identifier (ID) assigned to the Chord client.")
 
 	flag.Parse()
 
-	// Create Chord node
-	// var node *ChordNode
-	if ID == "" {
-		ID = "abc"
-	}
 	var err error
-	localNode, err = NewChordNode(ID, bindAddr, bindPort)
+	tcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", bindAddr, bindPort))
+	if err != nil {
+		return
+	}
+	var ID NodeAddress = (NodeAddress)(manualID)
+	localNode, err = NewNode(ID, tcpAddr)
 	if err != nil {
 		log.Println(err)
 		return
@@ -118,7 +116,11 @@ func main() {
 	// If joining an existing ring, attempt to join
 	if createRing {
 	} else {
-		joinNode, err := NewChordNode(nil, joinAddr, joinPort)
+		tcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", bindAddr, bindPort))
+		if err != nil {
+			return
+		}
+		joinNode, err := NewNode("", tcpAddr)
 		if err != nil {
 			log.Println(err)
 			return
