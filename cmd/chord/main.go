@@ -24,7 +24,7 @@ type JoinRPCReply struct {
 }
 
 var (
-	localNode            *Node
+	node                 *Node
 	stabilizeTime        time.Duration
 	fixFingersTime       time.Duration
 	checkPredecessorTime time.Duration
@@ -43,7 +43,7 @@ type Node struct {
 }
 
 func (node *Node) Join(args *JoinRPCArgs, reply *JoinRPCReply) error {
-	log.Printf("node with ID: %v is joining the ring\n", args.ID)
+	log.Printf("node with ID: %v is joining the ring through: \n", args.ID, node.ID)
 	reply.Ok = true
 	return nil
 }
@@ -144,42 +144,42 @@ func main() {
 	flag.Parse()
 
 	var err error
-	tcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", bindAddr, bindPort))
+	bindTcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", bindAddr, bindPort))
 	if err != nil {
+		log.Printf("Failed to resolve tcp address to bind, ip:%v, port:%v, err: %v", bindAddr, bindPort, err)
 		return
 	}
+
 	var ID NodeAddress = (NodeAddress)(manualID)
-	localNode, err = NewNode(ID, tcpAddr)
+	node, err = NewNode(ID, bindTcpAddr)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	// Output Chord node information
-	fmt.Printf("Chord node ID: %s\n", localNode.ID)
-	fmt.Printf("Bind address: %s\n", bindAddr)
-	fmt.Printf("Bind port: %d\n", bindPort)
+	log.Printf("Chord node ID: %s\n", node.ID)
+	log.Printf("Bind address: %s\n", bindAddr)
+	log.Printf("Bind port: %d\n", bindPort)
+	log.Println("Creating a new ring")
+	go node.serve()
 
-	createRing := joinAddr == ""
 	// If joining an existing ring, attempt to join
-	if createRing {
-		log.Println("Creating a new ring")
-		go localNode.serve()
-	} else {
-		tcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", joinAddr, joinPort))
+	if joinAddr != "" {
+		joinTcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", joinAddr, joinPort))
 		if err != nil {
-			return
-		}
-		_, err = NewNode("", tcpAddr)
-		if err != nil {
-			log.Println(err)
+			log.Printf("Failed to resolve tcp address to join, ip:%v, port:%v, err: %v", joinAddr, joinPort, err)
 			return
 		}
 
 		args := JoinRPCArgs{}
 		reply := JoinRPCReply{}
 		args.ID = "3"
+<<<<<<< HEAD
 		call("Node.Join", tcpAddr, &args, &reply)
 
+=======
+		call("Node.Join", joinTcpAddr, &args, &reply)
+>>>>>>> 216393468162359cd6c9515835e5e1a62e02cd99
 	}
 
 	for !finished {
