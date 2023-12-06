@@ -4,11 +4,12 @@ import (
 	"crypto/sha1"
 	"flag"
 	"fmt"
-  "math/big"
 	"log"
+	"math/big"
 	"net"
 	"sync"
 	"time"
+
 	"github.com/alfredfo/chord/api"
 	"github.com/alfredfo/chord/transport"
 )
@@ -35,19 +36,18 @@ func hash(data []byte) string {
 }
 
 func hashStringToBigInt(elt string) *big.Int {
-    hasher := sha1.New()
-    hasher.Write([]byte(elt))
-    return new(big.Int).SetBytes(hasher.Sum(nil))
+	hasher := sha1.New()
+	hasher.Write([]byte(elt))
+	return new(big.Int).SetBytes(hasher.Sum(nil))
 }
 
 func hashAddress(tcpAddr net.TCPAddr) api.NodeAddress {
-  hashInt := hashStringToBigInt(tcpAddr.String())
-  // hashMod := new(big.Int).Exp(big.NewInt(2), big.NewInt(keySize), nil)
-  nodeId := new(big.Int).Mod(hashInt, big.NewInt(keySize))
-  log.Printf("nodeid: %v", nodeId)
+	hashInt := hashStringToBigInt(tcpAddr.String())
+	// hashMod := new(big.Int).Exp(big.NewInt(2), big.NewInt(keySize), nil)
+	nodeId := new(big.Int).Mod(hashInt, big.NewInt(keySize))
+	log.Printf("nodeid: %v", nodeId)
 	return api.NodeAddress(nodeId.String())
 }
-
 
 // Newapi.Node creates a new Chord node with the given ID.
 func NewNode(id api.NodeAddress, addr *net.TCPAddr) (*api.Node, error) {
@@ -60,7 +60,7 @@ func NewNode(id api.NodeAddress, addr *net.TCPAddr) (*api.Node, error) {
 		Successors:  nil,
 		Predecessor: "",
 		FingerTable: make([]api.NodeAddress, m),
-		Bucket:      make(map[api.Key]string),
+		Bucket:      api.Bucket{},
 		Address:     addr,
 	}, nil
 }
@@ -120,7 +120,7 @@ func main() {
 		}
 		log.Printf("joining ring\n")
 		transport.SendJoin(node.ID, joinTCPAddr)
-		
+
 	} else {
 		log.Println("Creating a new ring")
 	}

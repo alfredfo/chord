@@ -3,6 +3,7 @@ package transport
 import (
 	"log"
 	"net"
+
 	"github.com/alfredfo/chord/api"
 )
 
@@ -17,6 +18,14 @@ type JoinRPCReply struct {
 func (tp *TransportNode) Join(args *JoinRPCArgs, reply *JoinRPCReply) error {
 	log.Printf("node with ID: %v is joining the ring through: %v\n", args.ID, tp.Node.ID)
 	reply.Ok = true
+
+	tp.Node.Mu.Lock()
+	defer tp.Node.Mu.Unlock()
+	tp.Node.FingerTable = append(tp.Node.FingerTable, args.ID)
+	// tp.Node.Predecessor = api.NodeAddress("")
+	// SendFindSuccessor()
+	// tp.Node.Successors = append()
+
 	return nil
 }
 
