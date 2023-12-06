@@ -6,12 +6,24 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
+	"net/rpc"
 	"sync"
 	"time"
 )
 
 type Key string
 type NodeAddress string
+
+var (
+	localNode            *Node
+	stabilizeTime        time.Duration
+	fixFingersTime       time.Duration
+	checkPredecessorTime time.Duration
+	finished             bool
+	mutex                sync.Mutex
+)
+
 type Node struct {
 	ID          NodeAddress
 	FingerTable []NodeAddress
@@ -22,13 +34,9 @@ type Node struct {
 	Address *net.TCPAddr
 }
 
-var (
-	localNode            *Node
-	stabilizeTime        time.Duration
-	fixFingersTime       time.Duration
-	checkPredecessorTime time.Duration
-	mutex                sync.Mutex
-)
+func (node *Node) Join() *Node {
+	return nil
+}
 
 func (node *Node) findSuccessor(*int) *Node {
 	return nil
@@ -38,8 +46,17 @@ func (node *Node) notify(childNode *Node) {
 
 }
 
-func (node *Node) join() *Node {
-	return nil
+func (node *Node) serve() {
+	rpc.Register(node)
+	rpc.HandleHTTP()
+
+	addr := node.Address
+	log.Println("listening on: ", addr)
+	l, e := net.ListenTCP("tcp", addr)
+	if e != nil {
+		log.Fatal("listen error:", e)
+	}
+	http.Serve(l, nil)
 }
 
 func hash(data []byte) string {
@@ -55,7 +72,7 @@ func hashAddress(tcpAddr net.TCPAddr) NodeAddress {
 // NewNode creates a new Chord node with the given ID.
 func NewNode(id NodeAddress, addr *net.TCPAddr) (*Node, error) {
 	if id == "" {
-		id = hashAddress(*tcpAddr)
+		id = hashAddress(*addr)
 	}
 
 	return &Node{
@@ -64,7 +81,7 @@ func NewNode(id NodeAddress, addr *net.TCPAddr) (*Node, error) {
 		Predecessor: "",
 		FingerTable: make([]NodeAddress, m),
 		Bucket:      make(map[Key]string),
-		Address:     tcpAddr,
+		Address:     addr,
 	}, nil
 }
 
@@ -108,24 +125,27 @@ func main() {
 		return
 	}
 	// Output Chord node information
-	fmt.Printf("Chord Node ID: %s\n", localNode.ID)
-	fmt.Printf("Bind Address: %s\n", bindAddr)
-	fmt.Printf("Bind Port: %d\n", bindPort)
+	fmt.Printf("Chord node ID: %s\n", localNode.ID)
+	fmt.Printf("Bind address: %s\n", bindAddr)
+	fmt.Printf("Bind port: %d\n", bindPort)
 
 	createRing := joinAddr != ""
 	// If joining an existing ring, attempt to join
 	if createRing {
+		go localNode.serve()
 	} else {
 		tcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", bindAddr, bindPort))
 		if err != nil {
 			return
 		}
-		joinNode, err := NewNode("", tcpAddr)
+		_, err = NewNode("", tcpAddr)
 		if err != nil {
 			log.Println(err)
 			return
 		}
 	}
 
-	// Keep the main goroutine running
+	for !finished {
+		time.Sleep(time.Second)
+	}
 }
