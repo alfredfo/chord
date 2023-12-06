@@ -5,7 +5,8 @@ import (
 )
 
 type Transport interface {
-	Join(ID api.NodeAddress)
+	Join(args *JoinRPCArgs, reply *JoinRPCReply)
+	Notify(args *NotifyRPCArgs, reply *NotifyRPCReply)
 }
 
 type TransportNode struct {
