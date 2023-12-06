@@ -12,7 +12,6 @@ import (
 	"time"
 )
 
-
 type Key string
 type NodeAddress string
 
@@ -67,7 +66,11 @@ func (node *Node) serve() {
 	if e != nil {
 		log.Fatal("listen error:", e)
 	}
-	http.Serve(l, nil)
+	err := http.Serve(l, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	finished = true
 }
 
 func hash(data []byte) string {
@@ -176,7 +179,7 @@ func main() {
 		reply := JoinRPCReply{}
 		args.ID = "3"
 		call("Node.Join", tcpAddr, &args, &reply)
-		
+
 	}
 
 	for !finished {
