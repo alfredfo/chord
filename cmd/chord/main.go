@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 	"github.com/alfredfo/chord/api"
+	"github.com/alfredfo/chord/transport"
 )
 
 var (
@@ -76,7 +77,7 @@ func main() {
 	flag.StringVar(&manualID, "i", "", "The identifier (ID) assigned to the Chord client.")
 
 	flag.Parse()
-
+	tpn := transport.TransportNode{}
 	var err error
 	bindTcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", bindAddr, bindPort))
 	if err != nil {
@@ -91,21 +92,24 @@ func main() {
 		return
 	}
 	ID = node.ID
+	tpn.Node = node
 	// Output Chord node information
 	log.Printf("Chord node ID: %s\n", node.ID)
 	log.Printf("Bind address: %s\n", bindAddr)
 	log.Printf("Bind port: %d\n", bindPort)
-	log.Println("Creating a new ring")
-	go serve(node)
+	go serve(&tpn)
 
-	// If joining an existing ring, attempt to join
 	if joinAddr != "" {
-		joinTcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", joinAddr, joinPort))
+		joinTCPAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", joinAddr, joinPort))
 		if err != nil {
 			log.Printf("Failed to resolve tcp address to join, ip:%v, port:%v, err: %v", joinAddr, joinPort, err)
 			return
 		}
-		api.SendJoin(ID, joinTcpAddr)
+		log.Printf("joining ring\n")
+		transport.SendJoin(node.ID, joinTCPAddr)
+		
+	} else {
+		log.Println("Creating a new ring")
 	}
 
 	for !finished {
