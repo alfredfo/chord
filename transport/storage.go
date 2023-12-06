@@ -1,8 +1,8 @@
 package transport
 
 import (
+  "log"
 	"net"
-
 	"github.com/alfredfo/chord/api"
 )
 
@@ -23,6 +23,7 @@ func (tp *TransportNode) Set(args *SetRPCArgs, reply *SetRPCReply) error {
 	tp.Node.Mu.Lock()
 	defer tp.Node.Mu.Unlock()
 	tp.Node.Bucket[args.Key] = args.Value
+  log.Printf("current val in node %v bucket: %v", tp.Node.ID, tp.Node.Bucket)
 	return nil
 }
 

@@ -3,12 +3,14 @@ package main
 import (
 	"bufio"
 	"crypto/sha1"
+  // "errors"
 	"flag"
 	"fmt"
 	"log"
 	"math/big"
 	"net"
 	"os"
+  "strings"
 	"sync"
 	"time"
 
@@ -116,7 +118,7 @@ func main() {
 
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
-		fmt.Print("Enter command: ")
+		fmt.Print("Enter command: \n")
 		// reads user input until \n by default
 		scanner.Scan()
 		// Holds the string that was scanned
@@ -124,6 +126,17 @@ func main() {
 		if len(command) != 0 {
 			fmt.Println("You entered: ", command)
 			// Here you can add a switch or if statements to handle the commands
+      splits := strings.Split(command, " ")
+      switch splits[0] {
+      case "set": {
+          key := splits[1]
+          val := splits[2]
+          transport.SendSet(api.Key(key), api.Value(val), bindTcpAddr)
+      }
+      default: {
+        log.Fatalln("not implemented") 
+      }
+      }
 		} else {
 			// exit if user entered an empty string
 			break
