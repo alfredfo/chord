@@ -52,14 +52,14 @@ func hashAddress(tcpAddr net.TCPAddr) string {
 
 // NewChordNode creates a new Chord node with the given ID.
 func NewChordNode(id string, addr string, port int) (*ChordNode, error) {
-
-	if id == "" {
-		return nil, fmt.Errorf("ID cannot be empty")
-	}
 	tcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", addr, port))
 	if err != nil {
 		return nil, err
 	}
+	if id == "" {
+		id = hashAddress(*tcpAddr)
+	}
+
 	return &ChordNode{
 		ID:          id,
 		Successor:   nil,
