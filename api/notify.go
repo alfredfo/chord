@@ -8,6 +8,6 @@ type NotifyRPCReply struct {
 	Ok bool
 }
 
-func (node *Node) Notify(childNode *Node) {
-
+func (node *Node) Notify(args *NotifyRPCArgs, reply *NotifyRPCArgs) {
+	return
 }

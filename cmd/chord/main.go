@@ -48,21 +48,6 @@ func NewNode(id api.NodeAddress, addr *net.TCPAddr) (*api.Node, error) {
 	}, nil
 }
 
-func call(rpcname string, addr *net.TCPAddr, args interface{}, reply interface{}) error {
-	c, err := rpc.DialHTTP("tcp", addr.String())
-	if err != nil {
-		log.Printf("error dialing: %v", err)
-		return err
-	}
-	defer c.Close()
-
-	err = c.Call(rpcname, args, reply)
-	if err != nil {
-		log.Printf("error calling: %v", err)
-		return err
-	}
-	return nil
-}
 
 const m = 160
 
@@ -123,7 +108,6 @@ func main() {
 		args := api.JoinRPCArgs{}
 		reply := api.JoinRPCReply{}
 		args.ID = "3"
-		call("Node.Join", joinTcpAddr, &args, &reply)
 	}
 
 	for !finished {
