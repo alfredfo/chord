@@ -134,7 +134,7 @@ func main() {
           transport.SendSet(api.Key(key), api.Value(val), bindTcpAddr)
       }
       default: {
-        log.Fatalln("not implemented") 
+        log.Println("not implemented") 
       }
       }
 		} else {
