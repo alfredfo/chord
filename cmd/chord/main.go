@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"net/rpc"
 	"sync"
 	"time"
 	"github.com/alfredfo/chord/api"
@@ -48,8 +47,9 @@ func NewNode(id api.NodeAddress, addr *net.TCPAddr) (*api.Node, error) {
 	}, nil
 }
 
-
 const m = 160
+
+
 
 func main() {
 	// Parse command-line arguments
@@ -104,10 +104,7 @@ func main() {
 			log.Printf("Failed to resolve tcp address to join, ip:%v, port:%v, err: %v", joinAddr, joinPort, err)
 			return
 		}
-
-		args := api.JoinRPCArgs{}
-		reply := api.JoinRPCReply{}
-		args.ID = "3"
+		api.SendJoin(ID, joinTcpAddr)
 	}
 
 	for !finished {

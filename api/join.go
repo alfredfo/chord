@@ -19,9 +19,9 @@ func (node *Node) Join(args *JoinRPCArgs, reply *JoinRPCReply) error {
 	return nil
 }
 
-func (node *Node) SendJoin(addr *net.TCPAddr) error {
+func SendJoin(ID NodeAddress, addr *net.TCPAddr) error {
 	args := JoinRPCArgs{}
-	args.ID = node.ID
+	args.ID = ID
 	reply := JoinRPCReply{}
 	return call("Node.Join", addr, &args, &reply)
 }
