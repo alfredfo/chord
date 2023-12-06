@@ -17,3 +17,11 @@ func (node *Node) Join(args *JoinRPCArgs, reply *JoinRPCReply) error {
 	reply.Ok = true
 	return nil
 }
+
+func (node *Node) FindSuccessor(*int) *Node {
+	return nil
+}
+
+func (node *Node) Notify(childNode *Node) {
+
+}

@@ -110,7 +110,7 @@ func main() {
 	log.Printf("Bind address: %s\n", bindAddr)
 	log.Printf("Bind port: %d\n", bindPort)
 	log.Println("Creating a new ring")
-	go node.Serve()
+	go serve(node)
 
 	// If joining an existing ring, attempt to join
 	if joinAddr != "" {
