@@ -174,12 +174,7 @@ func main() {
 		args := JoinRPCArgs{}
 		reply := JoinRPCReply{}
 		args.ID = "3"
-<<<<<<< HEAD
-		call("Node.Join", tcpAddr, &args, &reply)
-
-=======
 		call("Node.Join", joinTcpAddr, &args, &reply)
->>>>>>> 216393468162359cd6c9515835e5e1a62e02cd99
 	}
 
 	for !finished {
