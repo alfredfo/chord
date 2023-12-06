@@ -19,11 +19,11 @@ type Node struct {
 	Address *net.TCPAddr
 }
 
-func (node *Node) findSuccessor(*int) *Node {
+func (node *Node) FindSuccessor(*int) *Node {
 	return nil
 }
 
-func (node *Node) notify(childNode *Node) {
+func (node *Node) Notify(childNode *Node) {
 
 }
 
