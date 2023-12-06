@@ -5,7 +5,6 @@ import (
 	"net"
 	"net/rpc"
 	"net/http"
-	//	"github.com/alfredfo/chord/api"
 	"github.com/alfredfo/chord/transport"
 )
 
