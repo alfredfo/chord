@@ -12,7 +12,6 @@ import (
 	"time"
 )
 
-
 type Key string
 type NodeAddress string
 
@@ -25,7 +24,7 @@ type JoinRPCReply struct {
 }
 
 var (
-	node            *Node
+	node                 *Node
 	stabilizeTime        time.Duration
 	fixFingersTime       time.Duration
 	checkPredecessorTime time.Duration
@@ -44,7 +43,7 @@ type Node struct {
 }
 
 func (node *Node) Join(args *JoinRPCArgs, reply *JoinRPCReply) error {
-  log.Printf("node with ID: %v is joining the ring through: \n", args.ID, node.ID)
+	log.Printf("node with ID: %v is joining the ring through: \n", args.ID, node.ID)
 	reply.Ok = true
 	return nil
 }
@@ -143,7 +142,7 @@ func main() {
 	var err error
 	bindTcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", bindAddr, bindPort))
 	if err != nil {
-    log.Printf("Failed to resolve tcp address to bind, ip:%v, port:%v, err: %v", bindAddr, bindPort, err)
+		log.Printf("Failed to resolve tcp address to bind, ip:%v, port:%v, err: %v", bindAddr, bindPort, err)
 		return
 	}
 
@@ -157,14 +156,14 @@ func main() {
 	log.Printf("Chord node ID: %s\n", node.ID)
 	log.Printf("Bind address: %s\n", bindAddr)
 	log.Printf("Bind port: %d\n", bindPort)
-  log.Println("Creating a new ring")
-  go node.serve()
+	log.Println("Creating a new ring")
+	go node.serve()
 
 	// If joining an existing ring, attempt to join
 	if joinAddr != "" {
 		joinTcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", joinAddr, joinPort))
 		if err != nil {
-      log.Printf("Failed to resolve tcp address to join, ip:%v, port:%v, err: %v", joinAddr, joinPort, err)
+			log.Printf("Failed to resolve tcp address to join, ip:%v, port:%v, err: %v", joinAddr, joinPort, err)
 			return
 		}
 
