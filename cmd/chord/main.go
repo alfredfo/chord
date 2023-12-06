@@ -1,27 +1,27 @@
 package main
 
 import (
+	"crypto/sha1"
 	"flag"
-	"net"
-	"time"
-	"sync"
 	"fmt"
 	"log"
-	"crypto/sha1"
+	"net"
+	"sync"
+	"time"
 )
 
 // ChordNode represents a node in the Chord DHT.
 type ChordNode struct {
-	ID                   string
-	Successor            *ChordNode
-	Predecessor          *ChordNode
-	FingerTable          []*ChordNode
-	Data                 map[string]string
-	Address              net.TCPAddr	
+	ID          string
+	Successor   *ChordNode
+	Predecessor *ChordNode
+	FingerTable []*ChordNode
+	Data        map[string]string
+	Address     net.TCPAddr
 }
 
 var (
-	localNode			*ChordNode
+	localNode            *ChordNode
 	stabilizeTime        time.Duration
 	fixFingersTime       time.Duration
 	checkPredecessorTime time.Duration
@@ -40,7 +40,6 @@ func (node *ChordNode) join() *ChordNode {
 	return nil
 }
 
-
 func hash(data []byte) string {
 	sha1 := sha1.Sum(data)
 	s := fmt.Sprintf("%x", sha1)
@@ -52,7 +51,7 @@ func hashAddress(tcpAddr net.TCPAddr) string {
 }
 
 // NewChordNode creates a new Chord node with the given ID.
-func NewChordNode(id string, addr string, port int ) (*ChordNode, error) {
+func NewChordNode(id string, addr string, port int) (*ChordNode, error) {
 
 	if id == "" {
 		return nil, fmt.Errorf("ID cannot be empty")
@@ -62,19 +61,16 @@ func NewChordNode(id string, addr string, port int ) (*ChordNode, error) {
 		return nil, err
 	}
 	return &ChordNode{
-		ID:                   id,
-		Successor:            nil,
-		Predecessor:          nil,
-		FingerTable:          make([]*ChordNode, m),
-		Data:                 make(map[string]string),
-		Address: 			  *tcpAddr,
-		
+		ID:          id,
+		Successor:   nil,
+		Predecessor: nil,
+		FingerTable: make([]*ChordNode, m),
+		Data:        make(map[string]string),
+		Address:     *tcpAddr,
 	}, nil
 }
 
-const m = 160 
-
-
+const m = 160
 
 func main() {
 	// Parse command-line arguments
@@ -87,7 +83,7 @@ func main() {
 		fixFingersTime       int
 		checkPredecessorTime int
 		numSuccessors        int
-		ID             		 string
+		ID                   string
 	)
 
 	flag.StringVar(&bindAddr, "a", "0.0.0.0", "The IP address that the Chord client will bind to and advertise.")
@@ -102,13 +98,11 @@ func main() {
 
 	flag.Parse()
 
-
-
 	// Create Chord node
 	// var node *ChordNode
 	if ID == "" {
 		ID = "abc"
-	} 
+	}
 	var err error
 	localNode, err = NewChordNode(ID, bindAddr, bindPort)
 	if err != nil {
@@ -120,13 +114,12 @@ func main() {
 	fmt.Printf("Bind Address: %s\n", bindAddr)
 	fmt.Printf("Bind Port: %d\n", bindPort)
 
-
-	createRing := joinAddr != "" 
+	createRing := joinAddr != ""
 	// If joining an existing ring, attempt to join
-	if createRing{
+	if createRing {
 	} else {
-		joinNode, err := NewChordNode(nil, joinAddr , joinPort)
-		if err != nil {	
+		joinNode, err := NewChordNode(nil, joinAddr, joinPort)
+		if err != nil {
 			log.Println(err)
 			return
 		}
