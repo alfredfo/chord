@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"crypto/sha1"
 	"flag"
 	"fmt"
 	"log"
 	"math/big"
 	"net"
+	"os"
 	"sync"
 	"time"
 
@@ -111,6 +113,26 @@ func main() {
 	log.Printf("Bind address: %s\n", bindAddr)
 	log.Printf("Bind port: %d\n", bindPort)
 	go serve(&tp)
+
+	scanner := bufio.NewScanner(os.Stdin)
+	for {
+		fmt.Print("Enter command: ")
+		// reads user input until \n by default
+		scanner.Scan()
+		// Holds the string that was scanned
+		command := scanner.Text()
+		if len(command) != 0 {
+			fmt.Println("You entered: ", command)
+			// Here you can add a switch or if statements to handle the commands
+		} else {
+			// exit if user entered an empty string
+			break
+		}
+	}
+	// handle error
+	if scanner.Err() != nil {
+		fmt.Println("Error: ", scanner.Err())
+	}
 
 	if joinAddr != "" {
 		joinTCPAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", joinAddr, joinPort))
