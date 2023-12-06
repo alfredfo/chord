@@ -6,25 +6,14 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"net/http"
 	"net/rpc"
 	"sync"
 	"time"
+	"github.com/alfredfo/chord/api"
 )
 
-type Key string
-type NodeAddress string
-
-type JoinRPCArgs struct {
-	ID NodeAddress
-}
-
-type JoinRPCReply struct {
-	Ok bool
-}
-
 var (
-	node                 *Node
+	node                 *api.Node
 	stabilizeTime        time.Duration
 	fixFingersTime       time.Duration
 	checkPredecessorTime time.Duration
@@ -32,46 +21,6 @@ var (
 	mutex                sync.Mutex
 )
 
-type Node struct {
-	ID          NodeAddress
-	FingerTable []NodeAddress
-	Predecessor NodeAddress
-	Successors  []NodeAddress
-
-	Bucket  map[Key]string
-	Address *net.TCPAddr
-}
-
-func (node *Node) Join(args *JoinRPCArgs, reply *JoinRPCReply) error {
-	log.Printf("node with ID: %v is joining the ring through: \n", args.ID, node.ID)
-	reply.Ok = true
-	return nil
-}
-
-func (node *Node) findSuccessor(*int) *Node {
-	return nil
-}
-
-func (node *Node) notify(childNode *Node) {
-
-}
-
-func (node *Node) serve() {
-	rpc.Register(node)
-	rpc.HandleHTTP()
-
-	addr := node.Address
-	log.Println("listening on: ", addr)
-	l, e := net.ListenTCP("tcp", addr)
-	if e != nil {
-		log.Fatal("listen error:", e)
-	}
-	err := http.Serve(l, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	finished = true
-}
 
 func hash(data []byte) string {
 	sha1 := sha1.Sum(data)
@@ -79,22 +28,22 @@ func hash(data []byte) string {
 	return s
 }
 
-func hashAddress(tcpAddr net.TCPAddr) NodeAddress {
-	return NodeAddress(hash([]byte(tcpAddr.String())))
+func hashAddress(tcpAddr net.TCPAddr) api.NodeAddress {
+	return api.NodeAddress(hash([]byte(tcpAddr.String())))
 }
 
-// NewNode creates a new Chord node with the given ID.
-func NewNode(id NodeAddress, addr *net.TCPAddr) (*Node, error) {
+// Newapi.Node creates a new Chord node with the given ID.
+func NewNode(id api.NodeAddress, addr *net.TCPAddr) (*api.Node, error) {
 	if id == "" {
 		id = hashAddress(*addr)
 	}
 
-	return &Node{
+	return &api.Node{
 		ID:          id,
 		Successors:  nil,
 		Predecessor: "",
-		FingerTable: make([]NodeAddress, m),
-		Bucket:      make(map[Key]string),
+		FingerTable: make([]api.NodeAddress, m),
+		Bucket:      make(map[api.Key]string),
 		Address:     addr,
 	}, nil
 }
@@ -150,7 +99,7 @@ func main() {
 		return
 	}
 
-	var ID NodeAddress = (NodeAddress)(manualID)
+	var ID api.NodeAddress = (api.NodeAddress)(manualID)
 	node, err = NewNode(ID, bindTcpAddr)
 	if err != nil {
 		log.Println(err)
@@ -161,7 +110,7 @@ func main() {
 	log.Printf("Bind address: %s\n", bindAddr)
 	log.Printf("Bind port: %d\n", bindPort)
 	log.Println("Creating a new ring")
-	go node.serve()
+	go node.Serve()
 
 	// If joining an existing ring, attempt to join
 	if joinAddr != "" {
@@ -171,8 +120,8 @@ func main() {
 			return
 		}
 
-		args := JoinRPCArgs{}
-		reply := JoinRPCReply{}
+		args := api.JoinRPCArgs{}
+		reply := api.JoinRPCReply{}
 		args.ID = "3"
 		call("Node.Join", joinTcpAddr, &args, &reply)
 	}
