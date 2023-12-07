@@ -6,8 +6,8 @@ import (
 	"math/big"
 )
 
-type Key string
-type Value string
+type Key = string
+type Value = string
 type Bucket map[Key]Value
 type NodeAddress = big.Int
 type Node struct {
