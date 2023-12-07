@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"crypto/sha1"
-  // "errors"
 	"flag"
 	"fmt"
 	"log"
@@ -110,6 +109,7 @@ func main() {
 	}
 	ID = node.ID
 	tp.Node = node
+
 	// Output Chord node information
 	log.Printf("Chord node ID: %s\n", node.ID)
 	log.Printf("Bind address: %s\n", bindAddr)
