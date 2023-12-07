@@ -3,6 +3,7 @@ package api
 import (
 	"net"
 	"sync"
+	"math/big"
 )
 
 type Key string
