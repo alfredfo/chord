@@ -13,8 +13,8 @@ type NodeAddress = big.Int
 type Node struct {
 	ID          NodeAddress
 	FingerTable []NodeAddress
-	Predecessor NodeAddress
-	Successor   NodeAddress
+	Predecessor *Node
+	Successor   *Node
 	Bucket      Bucket
 	Address     *net.TCPAddr
 	Mu          sync.Mutex

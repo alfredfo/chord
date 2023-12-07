@@ -2,7 +2,6 @@ package transport
 
 import (
 	"log"
-	"net"
 	"github.com/alfredfo/chord/api"
 )
 
@@ -14,17 +13,17 @@ type NotifyRPCReply struct {
 
 func (tp *TransportNode) Notify(args *NotifyRPCArgs, reply *NotifyRPCReply) error {
 	log.Println("recieved notify call")
-	reply.Successor = tp.Node.Successor
+	reply.Successor = tp.Node.Successor.ID
 	return nil
 }
 
-func SendNotify(ID api.NodeAddress, addr *net.TCPAddr) error {
+func SendNotify(node *api.Node) error {
 	args := NotifyRPCArgs{}
 	reply := NotifyRPCReply{}
-	log.Printf("Notifying ring at %v with ID %v\n", addr, ID)
-	err := call("TransportNode.Notify", addr, &args, &reply)
+	log.Printf("Notifying ring at %v with ID %v\n", node.Address, node.ID)
+	err := call("TransportNode.Notify", node.Address, &args, &reply)
 	if err != nil {
-		log.Printf("error sending Notify to %v: %v\n", ID, err)
+		log.Printf("error sending Notify to %v: %v\n", node.ID, err)
 	}
 	log.Printf("sugma balls: %v\n", reply.Successor)
 	return nil

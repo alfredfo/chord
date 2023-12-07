@@ -13,6 +13,7 @@ type JoinRPCArgs struct {
 }
 
 type JoinRPCReply struct {
+	FoundSuccessor api.NodeAddress
 	Ok bool
 }
 
@@ -22,14 +23,16 @@ func (tp *TransportNode) Join(args *JoinRPCArgs, reply *JoinRPCReply) error {
 
 	tp.Node.Mu.Lock()
 	defer tp.Node.Mu.Unlock()
+	SendFindSuccessor(tp.Node.ID, nil)
 	//tp.Node.FingerTable = append(tp.Node.FingerTable, args.ID)
 	return nil
 }
 
-func SendJoin(ID api.NodeAddress, addr *net.TCPAddr) error {
+func SendJoin(ID api.NodeAddress, addr *net.TCPAddr) (api.NodeAddress, error) {
 	args := JoinRPCArgs{}
 	args.ID = (big.Int)(ID)
 	reply := JoinRPCReply{}
 	log.Printf("Joining ring at %v with ID %v\n", addr, args.ID.String())
-	return call("TransportNode.Join", addr, &args, &reply)
+	err := call("TransportNode.Join", addr, &args, &reply)
+	return reply.FoundSuccessor, err
 }
