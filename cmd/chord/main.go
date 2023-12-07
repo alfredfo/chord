@@ -86,7 +86,7 @@ func main() {
 	tp.Node = node
 
 	// Output Chord node information
-	log.Printf("Chord node ID: %s\n", node.ID)
+	log.Printf("Chord node ID: %s\n", node.ID.String())
 	log.Printf("Bind address: %s\n", bindAddr)
 	log.Printf("Bind port: %d\n", bindPort)
 	go serve(&tp)
@@ -104,14 +104,14 @@ func main() {
 		log.Println("Creating a new ring")
 	}
 	
-	cli()
+	cli(bindAddr, bindPort)
 
 	for !finished {
 		time.Sleep(time.Second)
 	}
 }
 
-func cli() {
+func cli(bindAddr string, bindPort int) {
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		fmt.Print("Enter command: \n")
@@ -127,9 +127,16 @@ func cli() {
 			case "set":
 				key := splits[1]
 				val := splits[2]
-				laddr := splits[3]
-				lport := splits[4]
-				addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", laddr, lport))
+				var addr *net.TCPAddr
+				var err error
+				if len(splits) > 3 {
+					laddr := splits[3]
+					lport := splits[4]
+				
+					addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", laddr, lport))
+				} else {
+					addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", "localhost", bindPort))
+				}
 				if err != nil {
 					log.Println(err)
 				}

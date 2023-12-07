@@ -17,7 +17,7 @@ type JoinRPCReply struct {
 }
 
 func (tp *TransportNode) Join(args *JoinRPCArgs, reply *JoinRPCReply) error {
-	log.Printf("node with ID: %v is joining the ring through: %v\n", args.ID, tp.Node.ID)
+	log.Printf("node with ID: %v is joining the ring through: %v\n", args.ID.String(), tp.Node.ID.String())
 	reply.Ok = true
 
 	tp.Node.Mu.Lock()
@@ -30,6 +30,6 @@ func SendJoin(ID api.NodeAddress, addr *net.TCPAddr) error {
 	args := JoinRPCArgs{}
 	args.ID = (big.Int)(ID)
 	reply := JoinRPCReply{}
-	log.Printf("Joining ring at %v with ID %v\n", addr, args.ID)
+	log.Printf("Joining ring at %v with ID %v\n", addr, args.ID.String())
 	return call("TransportNode.Join", addr, &args, &reply)
 }
