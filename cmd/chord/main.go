@@ -164,6 +164,22 @@ func cli(bindAddr string, bindPort int) {
 					continue
 				}
 				log.Printf("Value for key %v is: %v", key, val)
+      case "delete":
+        key := splits[1]
+        if len(splits) > 2 {
+          laddr := splits[2]
+          lport := splits[3]
+          addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", laddr, lport))
+        } else {
+          addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", bindAddr, bindPort))
+        }
+				val, err := transport.SendDelete(api.Key(key), addr)
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+				log.Printf("Value for key %v is: %v, deleted from bucket", key, val)
+
 			default:
 				log.Println("not implemented")
 			}

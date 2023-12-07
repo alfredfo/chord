@@ -35,6 +35,15 @@ func (tp *TransportNode) Get(args *GetRPCArgs, reply *GetRPCReply) error {
 	return nil
 }
 
+func (tp *TransportNode) Delete(args *GetRPCArgs, reply *GetRPCReply) error {
+	tp.Node.Mu.Lock()
+	defer tp.Node.Mu.Unlock()
+	reply.Value = tp.Node.Bucket[args.Key]
+  delete(tp.Node.Bucket, args.Key)
+  log.Printf("current val in node %v bucket: %v", tp.Node.ID, tp.Node.Bucket)
+	return nil
+}
+
 func SendSet(key api.Key, value api.Value, addr *net.TCPAddr) error {
 	args := SetRPCArgs{}
 	keyHash := hashing.HashString(key)
@@ -50,5 +59,14 @@ func SendGet(key api.Key, addr *net.TCPAddr) (api.Value, error) {
 	args.Key = keyHash.String()
 	reply := GetRPCReply{}
 	err := call("TransportNode.Get", addr, &args, &reply)
+	return reply.Value, err
+}
+
+func SendDelete(key api.Key, addr *net.TCPAddr) (api.Value, error) {
+	args := GetRPCArgs{}
+	keyHash := hashing.HashString(key)
+	args.Key = keyHash.String()
+	reply := GetRPCReply{}
+	err := call("TransportNode.Delete", addr, &args, &reply)
 	return reply.Value, err
 }
