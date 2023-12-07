@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/alfredfo/chord/api"
+	"github.com/alfredfo/chord/hashing"
 	"github.com/alfredfo/chord/transport"
 )
 
@@ -30,15 +31,26 @@ var (
 
 // Newapi.Node creates a new Chord node with the given ID.
 func NewNode(sid string, addr *net.TCPAddr) (*api.Node, error) {
-	var id *api.NodeAddress
+	// var id *api.NodeAddress
+	var id api.NodeAddress
+
 	if sid == "" {
-		id = hashAddress(addr)
+		id = *(hashing.HashAddress(addr))
+	} else {
+		id.SetBytes([]byte(sid))
 	}
 
+<<<<<<< HEAD
 	node := &api.Node{
 		ID:          *id,
 		Successor:   nil,
 		Predecessor: nil,
+=======
+	return &api.Node{
+		ID:          id,
+		Successor:   api.NodeAddress{},
+		Predecessor: api.NodeAddress{},
+>>>>>>> yuhua
 		FingerTable: make([]api.NodeAddress, m),
 		Bucket:      api.Bucket{},
 		Address:     addr,
@@ -79,7 +91,7 @@ func main() {
 		log.Printf("Failed to resolve tcp address to bind, ip:%v, port:%v, err: %v", bindAddr, bindPort, err)
 		return
 	}
-
+	log.Printf("manualId: %v", manualID)
 	node, err := NewNode(manualID, bindTcpAddr)
 	if err != nil {
 		log.Println(err)
@@ -110,7 +122,7 @@ func main() {
 	go stabilizeTimer(stabilizeTime)
 	go checkPredecessorTimer(checkPredecessorTime)
 	go fixFingersTimer(fixFingersTime)
-	
+
 	cli(bindAddr, bindPort)
 
 	for !finished {
@@ -139,7 +151,7 @@ func cli(bindAddr string, bindPort int) {
 				if len(splits) > 3 {
 					laddr := splits[3]
 					lport := splits[4]
-				
+
 					addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", laddr, lport))
 				} else {
 					addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", "localhost", bindPort))

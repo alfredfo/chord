@@ -1,11 +1,16 @@
 package transport
 
 import (
-	"log"
 	"github.com/alfredfo/chord/api"
+	"log"
+<<<<<<< HEAD
+	"github.com/alfredfo/chord/api"
+=======
+	"net"
+>>>>>>> yuhua
 )
 
-type NotifyRPCArgs struct {}
+type NotifyRPCArgs struct{}
 
 type NotifyRPCReply struct {
 	Successor api.NodeAddress
