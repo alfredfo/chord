@@ -3,11 +3,6 @@ package transport
 import (
 	"github.com/alfredfo/chord/api"
 	"log"
-<<<<<<< HEAD
-	"github.com/alfredfo/chord/api"
-=======
-	"net"
->>>>>>> yuhua
 )
 
 type NotifyRPCArgs struct{}
@@ -18,7 +13,7 @@ type NotifyRPCReply struct {
 
 func (tp *TransportNode) Notify(args *NotifyRPCArgs, reply *NotifyRPCReply) error {
 	log.Println("recieved notify call")
-	reply.Successor = tp.Node.Successor.ID
+	reply.Successor = tp.Node.Successor
 	return nil
 }
 

@@ -40,23 +40,15 @@ func NewNode(sid string, addr *net.TCPAddr) (*api.Node, error) {
 		id.SetBytes([]byte(sid))
 	}
 
-<<<<<<< HEAD
-	node := &api.Node{
-		ID:          *id,
-		Successor:   nil,
-		Predecessor: nil,
-=======
 	return &api.Node{
 		ID:          id,
 		Successor:   api.NodeAddress{},
 		Predecessor: api.NodeAddress{},
->>>>>>> yuhua
 		FingerTable: make([]api.NodeAddress, m),
 		Bucket:      api.Bucket{},
 		Address:     addr,
-	}
+	}, nil
 	
-	return node, nil
 }
 
 func main() {
@@ -116,7 +108,7 @@ func main() {
 
 	} else {
 		log.Println("Creating a new ring")
-		node.Successor = node
+		node.Successor = node.ID
 	}
 
 	go stabilizeTimer(stabilizeTime)
