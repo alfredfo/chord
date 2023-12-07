@@ -2,14 +2,12 @@ package main
 
 import (
 	"bufio"
-	"crypto/sha1"
 	"flag"
 	"fmt"
 	"log"
-	"math/big"
 	"net"
 	"os"
-  "strings"
+	"strings"
 	"sync"
 	"time"
 
@@ -30,38 +28,17 @@ var (
 	mutex                sync.Mutex
 )
 
-const keySize = 4
-
-func hash(data []byte) string {
-	sha1 := sha1.Sum(data)
-	s := fmt.Sprintf("%x", sha1)
-	return s
-}
-
-func hashStringToBigInt(elt string) *big.Int {
-	hasher := sha1.New()
-	hasher.Write([]byte(elt))
-	return new(big.Int).SetBytes(hasher.Sum(nil))
-}
-
-func hashAddress(tcpAddr net.TCPAddr) api.NodeAddress {
-	hashInt := hashStringToBigInt(tcpAddr.String())
-	// hashMod := new(big.Int).Exp(big.NewInt(2), big.NewInt(keySize), nil)
-	nodeId := new(big.Int).Mod(hashInt, big.NewInt(keySize))
-	log.Printf("nodeid: %v", nodeId)
-	return api.NodeAddress(nodeId.String())
-}
-
 // Newapi.Node creates a new Chord node with the given ID.
-func NewNode(id api.NodeAddress, addr *net.TCPAddr) (*api.Node, error) {
-	if id == "" {
-		id = hashAddress(*addr)
+func NewNode(sid string, addr *net.TCPAddr) (*api.Node, error) {
+	var id *api.NodeAddress
+	if sid == "" {
+		id = hashAddress(addr)
 	}
 
 	return &api.Node{
-		ID:          id,
+		ID:          *id,
 		Successors:  nil,
-		Predecessor: "",
+		Predecessor: api.NodeAddress{},
 		FingerTable: make([]api.NodeAddress, m),
 		Bucket:      api.Bucket{},
 		Address:     addr,
@@ -101,13 +78,11 @@ func main() {
 		return
 	}
 
-	var ID api.NodeAddress = (api.NodeAddress)(manualID)
-	node, err := NewNode(ID, bindTcpAddr)
+	node, err := NewNode(manualID, bindTcpAddr)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	ID = node.ID
 	tp.Node = node
 
 	// Output Chord node information
@@ -115,52 +90,6 @@ func main() {
 	log.Printf("Bind address: %s\n", bindAddr)
 	log.Printf("Bind port: %d\n", bindPort)
 	go serve(&tp)
-
-	scanner := bufio.NewScanner(os.Stdin)
-	for { 
-		fmt.Print("Enter command: \n")
-		// reads user input until \n by default
-		scanner.Scan()
-		// Holds the string that was scanned
-		command := scanner.Text()
-		if len(command) != 0 {
-			fmt.Println("You entered: ", command)
-			// Here you can add a switch or if statements to handle the commands
-      splits := strings.Split(command, " ")
-      switch splits[0] {
-        case "set": 
-          key := splits[1]
-          val := splits[2] 
-          laddr := splits[3]
-          lport := splits[4]
-          addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", laddr, lport))
-          if err != nil {
-            log.Println(err)
-          }
-          transport.SendSet(api.Key(key), api.Value(val), addr)
-        case "get":
-          key := splits[1]
-          laddr := splits[2]
-          lport := splits[3]
-          addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", laddr, lport))
-          val, err := transport.SendGet(api.Key(key), addr)
-          if err != nil {
-            log.Println(err)
-            continue
-          }
-          log.Printf("Value for key %v is: %v", key, val)
-        default: 
-          log.Println("not implemented") 
-      }
-		} else {
-			// exit if user entered an empty string
-			break
-		}
-	}
-	// handle error
-	if scanner.Err() != nil {
-		fmt.Println("Error: ", scanner.Err())
-	}
 
 	if joinAddr != "" {
 		joinTCPAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", joinAddr, joinPort))
@@ -174,8 +103,58 @@ func main() {
 	} else {
 		log.Println("Creating a new ring")
 	}
+	
+	cli()
 
 	for !finished {
 		time.Sleep(time.Second)
+	}
+}
+
+func cli() {
+	scanner := bufio.NewScanner(os.Stdin)
+	for {
+		fmt.Print("Enter command: \n")
+		// reads user input until \n by default
+		scanner.Scan()
+		// Holds the string that was scanned
+		command := scanner.Text()
+		if len(command) != 0 {
+			fmt.Println("You entered: ", command)
+			// Here you can add a switch or if statements to handle the commands
+			splits := strings.Split(command, " ")
+			switch splits[0] {
+			case "set":
+				key := splits[1]
+				val := splits[2]
+				laddr := splits[3]
+				lport := splits[4]
+				addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", laddr, lport))
+				if err != nil {
+					log.Println(err)
+				}
+				transport.SendSet(api.Key(key), api.Value(val), addr)
+			case "get":
+				key := splits[1]
+				laddr := splits[2]
+				lport := splits[3]
+				addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", laddr, lport))
+				val, err := transport.SendGet(api.Key(key), addr)
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+				log.Printf("Value for key %v is: %v", key, val)
+			default:
+				log.Println("not implemented")
+			}
+		} else {
+			// exit if user entered an empty string
+			break
+		}
+	}
+	// handle error
+	if scanner.Err() != nil {
+		fmt.Println("Error: ", scanner.Err())
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"net"
 
 	"github.com/alfredfo/chord/api"
+	"math/big"
 )
 
 type JoinRPCArgs struct {
@@ -21,17 +22,13 @@ func (tp *TransportNode) Join(args *JoinRPCArgs, reply *JoinRPCReply) error {
 
 	tp.Node.Mu.Lock()
 	defer tp.Node.Mu.Unlock()
-	tp.Node.FingerTable = append(tp.Node.FingerTable, args.ID)
-	// tp.Node.Predecessor = api.NodeAddress("")
-	// SendFindSuccessor()
-	// tp.Node.Successors = append()
-
+	//tp.Node.FingerTable = append(tp.Node.FingerTable, args.ID)
 	return nil
 }
 
 func SendJoin(ID api.NodeAddress, addr *net.TCPAddr) error {
 	args := JoinRPCArgs{}
-	args.ID = ID
+	args.ID = (big.Int)(ID)
 	reply := JoinRPCReply{}
 	log.Printf("Joining ring at %v with ID %v\n", addr, args.ID)
 	return call("TransportNode.Join", addr, &args, &reply)
