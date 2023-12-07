@@ -2,8 +2,8 @@ package main
 
 import (
 	"crypto/sha1"
-	"math/big"
 	"github.com/alfredfo/chord/api"
+	"math/big"
 	"net"
 )
 
@@ -23,9 +23,11 @@ func jump(node *api.Node, fingerentry int) *api.NodeAddress {
 }
 
 func hashString(elt string) *api.NodeAddress {
-    hasher := sha1.New()
-    hasher.Write([]byte(elt))
-    return new(big.Int).SetBytes(hasher.Sum(nil))
+	hasher := sha1.New()
+	hasher.Write([]byte(elt))
+	hash := new(big.Int).SetBytes(hasher.Sum(nil))
+	hash = new(big.Int).Mod(hash, big.NewInt(keySize))
+	return hash
 }
 
 func hashAddress(addr *net.TCPAddr) *api.NodeAddress {
