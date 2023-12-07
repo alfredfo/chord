@@ -1,4 +1,4 @@
-package main
+package hashing
 
 import (
 	"crypto/sha1"
@@ -7,13 +7,13 @@ import (
 	"net"
 )
 
-//const keySize = sha1.Size * 8
-const keySize = sha1.Size/2
+// const keySize = sha1.Size * 8
+const keySize = sha1.Size / 2
 
 var two = big.NewInt(2)
 var hashMod = new(big.Int).Exp(big.NewInt(2), big.NewInt(keySize), nil)
 
-func jump(node *api.Node, fingerentry int) *api.NodeAddress {
+func Jump(node *api.Node, fingerentry int) *api.NodeAddress {
 	n := big.Int(node.ID)
 
 	fingerentryminus1 := big.NewInt(int64(fingerentry) - 1)
@@ -23,7 +23,7 @@ func jump(node *api.Node, fingerentry int) *api.NodeAddress {
 	return new(big.Int).Mod(sum, hashMod)
 }
 
-func hashString(elt string) *api.NodeAddress {
+func HashString(elt string) *big.Int {
 	hasher := sha1.New()
 	hasher.Write([]byte(elt))
 	hash := new(big.Int).SetBytes(hasher.Sum(nil))
@@ -31,6 +31,6 @@ func hashString(elt string) *api.NodeAddress {
 	return hash
 }
 
-func hashAddress(addr *net.TCPAddr) *api.NodeAddress {
-	return hashString(addr.String())
+func HashAddress(addr *net.TCPAddr) *api.NodeAddress {
+	return HashString(addr.String())
 }

@@ -1,11 +1,11 @@
 package main
 
 import (
+	"github.com/alfredfo/chord/transport"
 	"log"
 	"net"
-	"net/rpc"
 	"net/http"
-	"github.com/alfredfo/chord/transport"
+	"net/rpc"
 )
 
 func serve(tpn *transport.TransportNode) error {

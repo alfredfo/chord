@@ -1,9 +1,10 @@
 package transport
 
 import (
-  "log"
-	"net"
 	"github.com/alfredfo/chord/api"
+	"github.com/alfredfo/chord/hashing"
+	"log"
+	"net"
 )
 
 type SetRPCArgs struct {
@@ -23,7 +24,7 @@ func (tp *TransportNode) Set(args *SetRPCArgs, reply *SetRPCReply) error {
 	tp.Node.Mu.Lock()
 	defer tp.Node.Mu.Unlock()
 	tp.Node.Bucket[args.Key] = args.Value
-  log.Printf("current val in node %v bucket: %v", tp.Node.ID, tp.Node.Bucket)
+	log.Printf("current val in node %v bucket: %v", tp.Node.ID, tp.Node.Bucket)
 	return nil
 }
 
@@ -36,7 +37,8 @@ func (tp *TransportNode) Get(args *GetRPCArgs, reply *GetRPCReply) error {
 
 func SendSet(key api.Key, value api.Value, addr *net.TCPAddr) error {
 	args := SetRPCArgs{}
-	args.Key = key
+	keyHash := hashing.HashString(key)
+	args.Key = keyHash.String()
 	args.Value = value
 	reply := SetRPCReply{}
 	return call("TransportNode.Set", addr, &args, &reply)
@@ -44,7 +46,8 @@ func SendSet(key api.Key, value api.Value, addr *net.TCPAddr) error {
 
 func SendGet(key api.Key, addr *net.TCPAddr) (api.Value, error) {
 	args := GetRPCArgs{}
-	args.Key = key
+	keyHash := hashing.HashString(key)
+	args.Key = keyHash.String()
 	reply := GetRPCReply{}
 	err := call("TransportNode.Get", addr, &args, &reply)
 	return reply.Value, err
