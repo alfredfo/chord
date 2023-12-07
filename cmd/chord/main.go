@@ -126,27 +126,24 @@ func cli(bindAddr string, bindPort int) {
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		fmt.Print("Enter command: \n")
-		// reads user input until \n by default
 		scanner.Scan()
-		// Holds the string that was scanned
 		command := scanner.Text()
 		if len(command) != 0 {
 			fmt.Println("You entered: ", command)
-			// Here you can add a switch or if statements to handle the commands
 			splits := strings.Split(command, " ")
-			switch splits[0] {
+		  	
+      var addr *net.TCPAddr
+      var err error
+      switch splits[0] {
 			case "set":
 				key := splits[1]
 				val := splits[2]
-				var addr *net.TCPAddr
-				var err error
 				if len(splits) > 3 {
 					laddr := splits[3]
 					lport := splits[4]
-
 					addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", laddr, lport))
 				} else {
-					addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", "localhost", bindPort))
+					addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", bindAddr, bindPort))
 				}
 				if err != nil {
 					log.Println(err)
@@ -154,9 +151,13 @@ func cli(bindAddr string, bindPort int) {
 				transport.SendSet(api.Key(key), api.Value(val), addr)
 			case "get":
 				key := splits[1]
-				laddr := splits[2]
-				lport := splits[3]
-				addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", laddr, lport))
+        if len(splits) > 2 {
+          laddr := splits[2]
+          lport := splits[3]
+          addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", laddr, lport))
+        } else {
+          addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", bindAddr, bindPort))
+        }
 				val, err := transport.SendGet(api.Key(key), addr)
 				if err != nil {
 					log.Println(err)
@@ -166,13 +167,6 @@ func cli(bindAddr string, bindPort int) {
 			default:
 				log.Println("not implemented")
 			}
-		} else {
-			// exit if user entered an empty string
-			break
 		}
-	}
-	// handle error
-	if scanner.Err() != nil {
-		fmt.Println("Error: ", scanner.Err())
 	}
 }
