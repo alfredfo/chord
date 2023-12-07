@@ -8,7 +8,7 @@ import (
 type Key string
 type Value string
 type Bucket map[Key]Value
-type NodeAddress string
+type NodeAddress = big.Int
 type Node struct {
 	ID          NodeAddress
 	FingerTable []NodeAddress
