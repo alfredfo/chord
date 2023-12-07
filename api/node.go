@@ -1,9 +1,9 @@
 package api
 
 import (
+	"math/big"
 	"net"
 	"sync"
-	"math/big"
 )
 
 type Key = string
@@ -14,7 +14,7 @@ type Node struct {
 	ID          NodeAddress
 	FingerTable []NodeAddress
 	Predecessor NodeAddress
-	Successors  []NodeAddress
+	Successor   NodeAddress
 	Bucket      Bucket
 	Address     *net.TCPAddr
 	Mu          sync.Mutex

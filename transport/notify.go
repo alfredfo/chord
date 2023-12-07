@@ -9,12 +9,12 @@ import (
 type NotifyRPCArgs struct {}
 
 type NotifyRPCReply struct {
-	SuccessorList []api.NodeAddress
+	Successor api.NodeAddress
 }
 
 func (tp *TransportNode) Notify(args *NotifyRPCArgs, reply *NotifyRPCReply) error {
 	log.Println("recieved notify call")
-	reply.SuccessorList = tp.Node.Successors
+	reply.Successor = tp.Node.Successor
 	return nil
 }
 
@@ -26,6 +26,6 @@ func SendNotify(ID api.NodeAddress, addr *net.TCPAddr) error {
 	if err != nil {
 		log.Printf("error sending Notify to %v: %v\n", ID, err)
 	}
-	log.Printf("sugma balls: %v\n", reply.SuccessorList)
+	log.Printf("sugma balls: %v\n", reply.Successor)
 	return nil
 }
