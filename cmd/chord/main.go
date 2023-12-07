@@ -103,6 +103,10 @@ func main() {
 	} else {
 		log.Println("Creating a new ring")
 	}
+
+	go stabilizeTimer(stabilizeTime)
+	go checkPredecessorTimer(checkPredecessorTime)
+	go fixFingersTimer(fixFingersTime)
 	
 	cli(bindAddr, bindPort)
 
