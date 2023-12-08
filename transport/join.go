@@ -23,8 +23,8 @@ type JoinRPCReply struct {
 func (tp *TransportNode) Join(args *JoinRPCArgs, reply *JoinRPCReply) error {
 	log.Printf("Node %v is trying to join the ring through: %v\n", args.ToJoinNode, tp.Node.NodeInfo)
 	reply.Ok = true
-	tp.Node.Mu.Lock()
-	defer tp.Node.Mu.Unlock()
+	//tp.Node.Mu.Lock()
+	//defer tp.Node.Mu.Unlock()
 
 	log.Printf("suc %v\n", tp.Node.Successor)
 	r, _ := SendFindSuccessor(args.ToJoinNode.ID, &tp.Node.Successor.TCPAddr)

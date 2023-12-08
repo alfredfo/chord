@@ -104,9 +104,9 @@ func main() {
 		node.Predecessor = node.NodeInfo
 	}
 
-	go stabilizeTimer(stabilizeTime)
-	go checkPredecessorTimer(checkPredecessorTime)
-	go fixFingersTimer(fixFingersTime)
+	go stabilizeTimer(node, stabilizeTime)
+	go checkPredecessorTimer(node, checkPredecessorTime)
+	go fixFingersTimer(node, fixFingersTime)
 
 	cli(bindAddr, bindPort)
 
@@ -130,8 +130,11 @@ func join(node *api.Node, joinAddr string, joinPort int) {
 	if err != nil {
 		log.Println("transport.SendJoin err: ", err)
 	}
+	log.Printf("asd")
+	node.Successor = succ
+	//transport.SendChangeSucessor(succ, &succ.TCPAddr)
+	log.Printf("asd2")
 
-	transport.SendChangeSucessor(succ, &succ.TCPAddr)
 	// set successor and predecessor for the current node,
 	// since SendJoin only change info at the sucessor node side
 	node.Successor = succ
