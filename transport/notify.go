@@ -2,21 +2,28 @@ package transport
 
 import (
 	"log"
-	// "net"
 
 	"github.com/alfredfo/chord/api"
 	"github.com/alfredfo/chord/hashing"
 )
 
-type NotifyRPCArgs struct{}
-
-type NotifyRPCReply struct {
-	Successor api.NodeInfoType
+type NotifyRPCArgs struct{
+	NodeInfo api.NodeInfoType
 }
+
+type NotifyRPCReply struct {}
 
 func (tp *TransportNode) Notify(args *NotifyRPCArgs, reply *NotifyRPCReply) error {
 	log.Println("recieved notify call")
-	reply.Successor = tp.Node.Successor
+
+	ni := args.NodeInfo
+	n := ni.ID
+	pred := tp.Node.Predecessor
+	
+	if pred.ID == "" || hashing.SBetween(pred.ID, n, tp.Node.NodeInfo.ID, false) {
+		tp.Node.Predecessor = ni
+	}
+	
 	return nil
 }
 
@@ -25,17 +32,12 @@ func SendNotify(node *api.Node, other api.NodeInfoType) error {
 	reply := NotifyRPCReply{}
 	log.Printf("Notifying ring at %v with ID %v\n", node.NodeInfo, node.NodeInfo)
 
-	n := node.NodeInfo.ID
-	pred := node.Predecessor
+	args.NodeInfo = node.NodeInfo
 	
-	if pred.ID == "" || hashing.SBetween(pred.ID, other.ID, n, false) {
-		node.Predecessor = other
-	}
-	
-	err := call("TransportNode.Notify", &node.NodeInfo.TCPAddr, &args, &reply)
+	err := call("TransportNode.Notify", &node.Successor.TCPAddr, &args, &reply)
 	if err != nil {
 		log.Printf("error sending Notify to %v: %v\n", node.NodeInfo, err)
 	}
-	log.Printf("sugma balls: %v\n", reply.Successor)
+	log.Printf("sugma balls\n")
 	return nil
 }
