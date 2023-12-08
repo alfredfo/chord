@@ -58,3 +58,30 @@ func SendJoin(node *api.Node, addr *net.TCPAddr) (map[string]net.TCPAddr, map[st
 	err := call("TransportNode.Join", addr, &args, &reply)
 	return reply.FoundSuccessor, reply.FoundPredcessor, err
 }
+
+func (tp *TransportNode) ChangeSucessor(args *JoinRPCArgs, reply *JoinRPCReply) error {
+  for k, _ := range args.NodeInfo {
+    log.Printf("change sucessor to ID: %v for node : %v\n", k, tp.Node.ID.String())
+  }
+	reply.Ok = true
+	tp.Node.Mu.Lock()
+	defer tp.Node.Mu.Unlock()
+  
+  tp.Node.Successor = args.NodeInfo
+
+	return nil
+}
+
+func SendChangeSucessor(node *api.Node, addr *net.TCPAddr) error {
+  
+  args := JoinRPCArgs{}
+  s := make(map[string]net.TCPAddr)
+  s[node.ID.String()] = *node.Address
+  args.NodeInfo = s
+	reply := JoinRPCReply{}
+	
+  err := call("TransportNode.ChangeSucessor", addr, &args, &reply)
+  return err
+}
+
+

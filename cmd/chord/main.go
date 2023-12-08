@@ -110,12 +110,21 @@ func main() {
     }
     node.Successor = succ
     node.Predecessor = pred
+    // tell predecessor to change sucessor
+    for k, v := range pred {
+      log.Printf("Tell node: %v to change sucessor to me, since it's my predecessor now", k)
+      err := transport.SendChangeSucessor(node, &v)
+      if err != nil {
+        log.Println(err)
+      }
+    }
 	} else {
 		log.Println("Creating a new ring")
 		// if it's a new ring, pionter the predecessor and sucessor to itself
 		succ := make(map[string]net.TCPAddr)
 		succ[node.ID.String()] = *bindTcpAddr
 	  node.Successor = succ
+    node.Predecessor = succ
 	}
 
 	go stabilizeTimer(stabilizeTime)
