@@ -25,7 +25,7 @@ func (tp *TransportNode) Join(args *JoinRPCArgs, reply *JoinRPCReply) error {
     log.Printf("node with ID: %v is joining the ring through: %v\n", k, tp.Node.ID.String())
   }
 	reply.Ok = true
-	tp.Node.Successor = nil
+	// tp.Node.Successor = nil
 	tp.Node.Mu.Lock()
 	defer tp.Node.Mu.Unlock()
 	// SendFindSuccessor(tp.Node.ID, nil)
@@ -35,7 +35,15 @@ func (tp *TransportNode) Join(args *JoinRPCArgs, reply *JoinRPCReply) error {
 	// tp.Node.Successor = map[]
   reply.FoundSuccessor = s
   reply.FoundPredcessor = tp.Node.Predecessor
-  tp.Node.Predecessor = args.NodeInfo 
+  
+  tp.Node.Predecessor = args.NodeInfo
+  
+  // successor and node same = single node in ring ? 
+  for k, v := range tp.Node.Successor {
+    if k == tp.Node.ID.String() && v.String() == tp.Node.Address.String() {
+      tp.Node.Successor = args.NodeInfo
+    }
+  }
 	return nil
 }
 
