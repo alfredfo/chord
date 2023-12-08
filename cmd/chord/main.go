@@ -87,7 +87,7 @@ func main() {
 	a := hashing.NodeIDToBigInt(node.NodeInfo.ID)
 	b := a.String()
 	c := hashing.NodeIDToBigInt(b)
-	log.Printf("%v %v %v %v\n", node.NodeInfo.ID, a, b, c)
+	log.Printf("%v %v %v %v\n", node.NodeInfo.ID, a, b, c)	
 	
 	// Output Chord node information
 	log.Printf("Chord node ID: %s\n", node.NodeInfo.ID)
@@ -118,20 +118,23 @@ func main() {
 
 func join(node *api.Node, joinAddr string, joinPort int) {
 	joinTCPAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", joinAddr, joinPort))
-		if err != nil {
-			log.Printf("Failed to resolve tcp address to join, ip:%v, port:%v, err: %v", joinAddr, joinPort, err)
-			return
-		}
-		
-		log.Printf("joining ring\n")
-		succ, pred, err := transport.SendJoin(node, joinTCPAddr)
-		if err != nil {
-			log.Println("transport.SendJoin err: ", err)
-		}
-		// set successor and predecessor for the current node,
-		// since SendJoin only change info at the sucessor node side
-		node.Successor = succ
-		node.Predecessor = pred
+	if err != nil {
+		log.Printf("Failed to resolve tcp address to join, ip:%v, port:%v, err: %v", joinAddr, joinPort, err)
+		return
+	}
+
+	
+	
+	log.Printf("joining ring\n")
+	succ, err := transport.SendJoin(node, joinTCPAddr)
+	if err != nil {
+		log.Println("transport.SendJoin err: ", err)
+	}
+
+	transport.SendChangeSucessor(succ, &succ.TCPAddr)
+	// set successor and predecessor for the current node,
+	// since SendJoin only change info at the sucessor node side
+	node.Successor = succ
 }
 
 

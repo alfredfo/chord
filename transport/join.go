@@ -15,7 +15,6 @@ type JoinRPCArgs struct {
 
 type JoinRPCReply struct {
 	Successor  api.NodeInfoType
-	Predcessor api.NodeInfoType
 	Ok         bool
 }
 
@@ -28,25 +27,23 @@ func (tp *TransportNode) Join(args *JoinRPCArgs, reply *JoinRPCReply) error {
 	defer tp.Node.Mu.Unlock()
 
 	log.Printf("suc %v\n", tp.Node.Successor)
-	reply.Predcessor = api.NodeInfoType{}
 	r, _ := SendFindSuccessor(args.ToJoinNode.ID, &tp.Node.Successor.TCPAddr)
 	reply.Successor = r
 	
 	log.Printf("Join: %v\n", tp.Node.NodeInfo)
 	log.Printf("Join: %v\n", tp.Node.Successor)
-	log.Printf("Join: %v\n", tp.Node.Predecessor)
 	return nil
 }
 
 // node will join ring through addr
 // return the sucessor and predcessor of node after join
-func SendJoin(node *api.Node, addr *net.TCPAddr) (api.NodeInfoType, api.NodeInfoType, error) {
+func SendJoin(node *api.Node, addr *net.TCPAddr) (api.NodeInfoType, error) {
 	args := JoinRPCArgs{}
 	args.ToJoinNode = node.NodeInfo
 	reply := JoinRPCReply{}
 
 	err := call("TransportNode.Join", addr, &args, &reply)
-	return reply.Successor, reply.Predcessor, err
+	return reply.Successor, err
 }
 
 type ChangeSuccessorRPCArgs struct {
@@ -67,9 +64,9 @@ func (tp *TransportNode) ChangeSucessor(args *ChangeSuccessorRPCArgs, reply *Cha
 }
 
 // change sucessor of addr to node
-func SendChangeSucessor(node *api.Node, addr *net.TCPAddr) error {
+func SendChangeSucessor(nodeInfo api.NodeInfoType, addr *net.TCPAddr) error {
 	args := ChangeSuccessorRPCArgs{}
-	args.NewSuccessor = node.NodeInfo
+	args.NewSuccessor = nodeInfo
 	reply := ChangeSuccessorRPCReply{}
 
 	err := call("TransportNode.ChangeSucessor", addr, &args, &reply)

@@ -32,8 +32,13 @@ func (tp *TransportNode) FindSuccessor(args *FindSuccessorRPCArgs, reply *FindSu
 	log.Printf("lel %v\n", succ)
 	succID := succ.ID
 
+	if ourID == succID {
+		reply.Successor = tp.Node.NodeInfo
+		return nil
+	}
+
 	log.Printf("sugma %v | %v | %v\n", ID, ourID, succID)
-	if hashing.SBetween(ourID, ID, succID, false) {
+	if hashing.SBetween(ourID, ID, succID, true) {
 		reply.Successor = succ
 	} else {
 		nodeInfo, err := SendFindSuccessor(ID, &tp.Node.Successor.TCPAddr)
