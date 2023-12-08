@@ -2,7 +2,7 @@ package transport
 
 import (
 	"github.com/alfredfo/chord/api"
-	"github.com/alfredfo/chord/hashing"
+	// "github.com/alfredfo/chord/hashing"
 	"log"
 	"net"
 )
@@ -39,15 +39,16 @@ func (tp *TransportNode) Delete(args *GetRPCArgs, reply *GetRPCReply) error {
 	tp.Node.Mu.Lock()
 	defer tp.Node.Mu.Unlock()
 	reply.Value = tp.Node.Bucket[args.Key]
-  delete(tp.Node.Bucket, args.Key)
-  log.Printf("current val in node %v bucket: %v", tp.Node.ID, tp.Node.Bucket)
+	delete(tp.Node.Bucket, args.Key)
+	log.Printf("current val in node %v bucket: %v", tp.Node.ID, tp.Node.Bucket)
 	return nil
 }
 
 func SendSet(key api.Key, value api.Value, addr *net.TCPAddr) error {
 	args := SetRPCArgs{}
-	keyHash := hashing.HashString(key)
-	args.Key = keyHash.String()
+	// keyHash := hashing.HashString(key)
+	// TODO: find the right node to store
+	args.Key = key
 	args.Value = value
 	reply := SetRPCReply{}
 	return call("TransportNode.Set", addr, &args, &reply)
@@ -55,8 +56,8 @@ func SendSet(key api.Key, value api.Value, addr *net.TCPAddr) error {
 
 func SendGet(key api.Key, addr *net.TCPAddr) (api.Value, error) {
 	args := GetRPCArgs{}
-	keyHash := hashing.HashString(key)
-	args.Key = keyHash.String()
+	// keyHash := hashing.HashString(key)
+	args.Key = key
 	reply := GetRPCReply{}
 	err := call("TransportNode.Get", addr, &args, &reply)
 	return reply.Value, err
@@ -64,8 +65,8 @@ func SendGet(key api.Key, addr *net.TCPAddr) (api.Value, error) {
 
 func SendDelete(key api.Key, addr *net.TCPAddr) (api.Value, error) {
 	args := GetRPCArgs{}
-	keyHash := hashing.HashString(key)
-	args.Key = keyHash.String()
+	// keyHash := hashing.HashString(key)
+	args.Key = key
 	reply := GetRPCReply{}
 	err := call("TransportNode.Delete", addr, &args, &reply)
 	return reply.Value, err
