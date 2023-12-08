@@ -29,24 +29,20 @@ var (
 	mutex                sync.Mutex
 )
 
-// Newapi.Node creates a new Chord node with the given ID.
-func NewNode(sid string, addr *net.TCPAddr) (*api.Node, error) {
-	// var id *api.NodeAddress
-	var id api.NodeAddress
-
-	if sid == "" {
-		id = *(hashing.HashAddress(addr))
-	} else {
-		id.SetBytes([]byte(sid))
-	}
+// Don't support custom node id now 
+// node id is always hashed from tcp address
+func NewNode(addr *net.TCPAddr) (*api.Node, error) {
+  
+  nodeInfo := api.NodeInfoType{}
+	nodeInfo.ID = hashing.HashTcpAddressToString(addr)  
+  nodeInfo.TCPAddr = *addr 
 
 	return &api.Node{
-		ID:          id,
-		Successor:   nil,
-		Predecessor: nil,
-		FingerTable: make([]api.NodeAddress, m),
+	  NodeInfo: nodeInfo,	
+		Successor:   api.NodeInfoType{},
+		Predecessor: api.NodeInfoType{},
+		FingerTable: make([]api.NodeInfoType, m),
 		Bucket:      api.Bucket{},
-		Address:     addr,
 	}, nil
 
 }
@@ -84,7 +80,7 @@ func main() {
 		return
 	}
 	log.Printf("manualId: %v", manualID)
-	node, err := NewNode(manualID, bindTcpAddr)
+	node, err := NewNode(bindTcpAddr)
 	if err != nil {
 		log.Println(err)
 		return
@@ -92,7 +88,7 @@ func main() {
 	tp.Node = node
 
 	// Output Chord node information
-	log.Printf("Chord node ID: %s\n", node.ID.String())
+	log.Printf("Chord node ID: %s\n", node.NodeInfo.ID)
 	log.Printf("Bind address: %s\n", bindAddr)
 	log.Printf("Bind port: %d\n", bindPort)
 	go serve(&tp)
@@ -103,28 +99,45 @@ func main() {
 			log.Printf("Failed to resolve tcp address to join, ip:%v, port:%v, err: %v", joinAddr, joinPort, err)
 			return
 		}
+    
+    // ask the join node to find the sucessor of node args.NodeInfo
+  // argsf := FindSuccessorRPCArgs{}
+  // replyf := FindSuccessorRPCReply{}
+
+  // err := tp.FindSuccessor(&argsf, &replyf)
+  // if err != nil {
+  //   log.Println(err)
+  // }
+    
+  // log.Println("finding sucessor first before join...")
+    // succ, err := transport.SendFindSuccessor(node, joinTCPAddr)
+    // if err != nil {
+    //   log.Println(err)
+    // }
+    // log.Printf("[main] successor found: %v\n", succ)
+     
+
 		log.Printf("joining ring\n")
     succ, pred, err := transport.SendJoin(node, joinTCPAddr)
     if err != nil {
       log.Println("transport.SendJoin err: ", err)
     }
+    // set successor and predecessor for the current node,
+    // since SendJoin only change info at the sucessor node side
     node.Successor = succ
     node.Predecessor = pred
-    // tell predecessor to change sucessor
-    for k, v := range pred {
-      log.Printf("Tell node: %v to change sucessor to me, since it's my predecessor now", k)
-      err := transport.SendChangeSucessor(node, &v)
-      if err != nil {
-        log.Println(err)
-      }
+
+    // tell predecessor to change sucessor to the current node
+    log.Printf("Tell node: %v to change sucessor to me: %v, since it's my predecessor now", succ, node.NodeInfo)
+    err = transport.SendChangeSucessor(node, &succ.TCPAddr)
+    if err != nil {
+      log.Println(err)
     }
 	} else {
 		log.Println("Creating a new ring")
 		// if it's a new ring, pionter the predecessor and sucessor to itself
-		succ := make(map[string]net.TCPAddr)
-		succ[node.ID.String()] = *bindTcpAddr
-	  node.Successor = succ
-    node.Predecessor = succ
+	  node.Successor = node.NodeInfo 
+    node.Predecessor = node.NodeInfo
 	}
 
 	go stabilizeTimer(stabilizeTime)
@@ -215,4 +228,9 @@ func cli(bindAddr string, bindPort int) {
 			}
 		}
 	}
+}
+
+func MPrintf(format string, args ...interface{}) {
+	message := "[main] " + fmt.Sprintf(format, args...)
+	log.Print(message)
 }

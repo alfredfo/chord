@@ -10,75 +10,81 @@ import (
 
 type JoinRPCArgs struct {
 	// ID api.NodeAddress
-  NodeInfo map[string]net.TCPAddr
+  ToJoinNode api.NodeInfoType
 }
 
 type JoinRPCReply struct {
-	FoundSuccessor map[string]net.TCPAddr
-  FoundPredcessor map[string]net.TCPAddr
-
+	Successor api.NodeInfoType
+  Predcessor api.NodeInfoType
 	Ok             bool
 }
 
+// Join only deal with join logic, the tp.Node must be args.NodeInfo' successor 
+// We use find_sucessor to find the sucessor first, then call this 
 func (tp *TransportNode) Join(args *JoinRPCArgs, reply *JoinRPCReply) error {
-  for k, _ := range args.NodeInfo {
-    log.Printf("node with ID: %v is joining the ring through: %v\n", k, tp.Node.ID.String())
-  }
+  log.Printf("Node %v is trying to join the ring through: %v\n", args.ToJoinNode, tp.Node.NodeInfo)
 	reply.Ok = true
-	// tp.Node.Successor = nil
 	tp.Node.Mu.Lock()
 	defer tp.Node.Mu.Unlock()
+  
+  // ask the join node to find the sucessor of node args.NodeInfo
+  // argsf := FindSuccessorRPCArgs{}
+  // replyf := FindSuccessorRPCReply{}
+
+  // err := tp.FindSuccessor(&argsf, &replyf)
+  // if err != nil {
+  //   log.Println(err)
+  // }
+  
+   
 	// SendFindSuccessor(tp.Node.ID, nil)
 	//tp.Node.FingerTable = append(tp.Node.FingerTable, args.ID)
-	s := make(map[string]net.TCPAddr)
-  s[tp.Node.ID.String()] = *tp.Node.Address
-	// tp.Node.Successor = map[]
-  reply.FoundSuccessor = s
-  reply.FoundPredcessor = tp.Node.Predecessor
+
+  reply.Successor = tp.Node.Successor
+  reply.Predcessor = tp.Node.Predecessor
   
-  tp.Node.Predecessor = args.NodeInfo
+  tp.Node.Predecessor = args.ToJoinNode
   
   // successor and node same = single node in ring ? 
-  for k, v := range tp.Node.Successor {
-    if k == tp.Node.ID.String() && v.String() == tp.Node.Address.String() {
-      tp.Node.Successor = args.NodeInfo
-    }
+  if tp.Node.NodeInfo.ID == tp.Node.Successor.ID {
+    tp.Node.Successor = args.ToJoinNode
   }
-	return nil
+	
+  return nil
 }
 
-func SendJoin(node *api.Node, addr *net.TCPAddr) (map[string]net.TCPAddr, map[string]net.TCPAddr, error) {
+// node will join ring through addr 
+// return the sucessor and predcessor of node after join
+func SendJoin(node *api.Node, addr *net.TCPAddr) (api.NodeInfoType, api.NodeInfoType, error) {
 	args := JoinRPCArgs{}
-	// args.ID = (big.Int)(ID)
-  s := make(map[string]net.TCPAddr)
-  s[node.ID.String()] = *node.Address
-  args.NodeInfo = s
-	reply := JoinRPCReply{}
-	log.Printf("Trying to join ring through %v with ID %v\n", addr, node.ID.String())
-	err := call("TransportNode.Join", addr, &args, &reply)
-	return reply.FoundSuccessor, reply.FoundPredcessor, err
+  args.ToJoinNode = node.NodeInfo
+  reply := JoinRPCReply{}
+	
+  err := call("TransportNode.Join", addr, &args, &reply)
+	return reply.Successor, reply.Predcessor, err
 }
 
-func (tp *TransportNode) ChangeSucessor(args *JoinRPCArgs, reply *JoinRPCReply) error {
-  for k, _ := range args.NodeInfo {
-    log.Printf("change sucessor to ID: %v for node : %v\n", k, tp.Node.ID.String())
-  }
-	reply.Ok = true
+type ChangeSuccessorRPCArgs struct {
+  NewSuccessor api.NodeInfoType 
+}
+type ChangeSuccessorRPCReply struct {
+
+}
+func (tp *TransportNode) ChangeSucessor(args *ChangeSuccessorRPCArgs, reply *ChangeSuccessorRPCReply) error {
+  log.Printf("Node %v is changing sucessor to %v\n", tp.Node.NodeInfo, args.NewSuccessor)
 	tp.Node.Mu.Lock()
 	defer tp.Node.Mu.Unlock()
   
-  tp.Node.Successor = args.NodeInfo
+  tp.Node.Successor = args.NewSuccessor
 
 	return nil
 }
 
+// change sucessor of addr to node 
 func SendChangeSucessor(node *api.Node, addr *net.TCPAddr) error {
-  
-  args := JoinRPCArgs{}
-  s := make(map[string]net.TCPAddr)
-  s[node.ID.String()] = *node.Address
-  args.NodeInfo = s
-	reply := JoinRPCReply{}
+  args := ChangeSuccessorRPCArgs{}
+  args.NewSuccessor = node.NodeInfo
+	reply := ChangeSuccessorRPCReply{}
 	
   err := call("TransportNode.ChangeSucessor", addr, &args, &reply)
   return err

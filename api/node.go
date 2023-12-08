@@ -1,7 +1,6 @@
 package api
 
 import (
-	"math/big"
 	"net"
 	"sync"
 )
@@ -9,13 +8,17 @@ import (
 type Key = string
 type Value = string
 type Bucket map[Key]Value
-type NodeAddress = big.Int
+type NodeID = string
+
+type NodeInfoType struct {
+  ID NodeID 
+  TCPAddr net.TCPAddr
+}
 type Node struct {
-	ID          NodeAddress
-	FingerTable []NodeAddress
-	Predecessor map[string]net.TCPAddr
-	Successor   map[string]net.TCPAddr
+  NodeInfo    NodeInfoType
+	FingerTable []NodeInfoType
+	Predecessor NodeInfoType
+	Successor   NodeInfoType 
 	Bucket      Bucket
-	Address     *net.TCPAddr
 	Mu          sync.Mutex
 }

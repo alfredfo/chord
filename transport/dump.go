@@ -15,7 +15,7 @@ type DumpRPCReply struct {
 
 func (tp *TransportNode) Dump(args *DumpRPCArgs, reply *DumpRPCReply) error {
   reply.DumpString = fmt.Sprintf("tcpAdd: %v, succ: %v, pred: %v, kv stored: %v\n", 
-    tp.Node.Address, tp.Node.Successor, tp.Node.Predecessor, tp.Node.Bucket)
+    tp.Node.NodeInfo, tp.Node.Successor, tp.Node.Predecessor, tp.Node.Bucket)
 	return nil
 }
 

@@ -13,9 +13,9 @@ func serve(tpn *transport.TransportNode) error {
 	rpc.HandleHTTP()
 
 	node := tpn.Node
-	addr := node.Address
+	addr := node.NodeInfo.TCPAddr
 	log.Println("listening on: ", addr)
-	l, e := net.ListenTCP("tcp", addr)
+	l, e := net.ListenTCP("tcp", &addr)
 	if e != nil {
 		log.Fatal("listen error:", e)
 	}

@@ -24,7 +24,7 @@ func (tp *TransportNode) Set(args *SetRPCArgs, reply *SetRPCReply) error {
 	tp.Node.Mu.Lock()
 	defer tp.Node.Mu.Unlock()
 	tp.Node.Bucket[args.Key] = args.Value
-	log.Printf("current val in node %v bucket: %v", tp.Node.ID, tp.Node.Bucket)
+	log.Printf("current val in node %v bucket: %v", tp.Node.NodeInfo, tp.Node.Bucket)
 	return nil
 }
 
@@ -40,7 +40,7 @@ func (tp *TransportNode) Delete(args *GetRPCArgs, reply *GetRPCReply) error {
 	defer tp.Node.Mu.Unlock()
 	reply.Value = tp.Node.Bucket[args.Key]
 	delete(tp.Node.Bucket, args.Key)
-	log.Printf("current val in node %v bucket: %v", tp.Node.ID, tp.Node.Bucket)
+	log.Printf("current val in node %v bucket: %v", tp.Node.NodeInfo, tp.Node.Bucket)
 	return nil
 }
 
