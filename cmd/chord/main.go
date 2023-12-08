@@ -104,8 +104,12 @@ func main() {
 			return
 		}
 		log.Printf("joining ring\n")
-		transport.SendJoin(node.ID, joinTCPAddr)
-
+    succ, pred, err := transport.SendJoin(node, joinTCPAddr)
+    if err != nil {
+      log.Println("transport.SendJoin err: ", err)
+    }
+    node.Successor = succ
+    node.Predecessor = pred
 	} else {
 		log.Println("Creating a new ring")
 		// if it's a new ring, pionter the predecessor and sucessor to itself
@@ -182,7 +186,20 @@ func cli(bindAddr string, bindPort int) {
 					continue
 				}
 				log.Printf("Value for key %v is: %v, deleted from bucket", key, val)
-
+      case "dump": // dump information of a given node 
+        log.Println("Trying to dump information.")
+        if len(splits) > 1 {
+          laddr := splits[1]
+          lport := splits[2]
+          addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", laddr, lport))
+				} else {
+					addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", bindAddr, bindPort))
+				}
+				err := transport.SendDump(addr)
+				if err != nil {
+					log.Println(err)
+					continue
+				}
 			default:
 				log.Println("not implemented")
 			}
