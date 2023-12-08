@@ -115,7 +115,7 @@ func main() {
 		// if it's a new ring, pionter the predecessor and sucessor to itself
 		succ := make(map[string]net.TCPAddr)
 		succ[node.ID.String()] = *bindTcpAddr
-		node.Successor = succ
+	  node.Successor = succ
 	}
 
 	go stabilizeTimer(stabilizeTime)
@@ -195,11 +195,12 @@ func cli(bindAddr string, bindPort int) {
 				} else {
 					addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", bindAddr, bindPort))
 				}
-				err := transport.SendDump(addr)
+				dumpstr, err := transport.SendDump(addr)
 				if err != nil {
 					log.Println(err)
 					continue
 				}
+        log.Printf("Node info: %v", dumpstr)
 			default:
 				log.Println("not implemented")
 			}
