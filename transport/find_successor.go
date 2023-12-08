@@ -19,6 +19,7 @@ type FindSuccessorRPCReply struct {
 func SendFindSuccessor(ID api.NodeID, addr *net.TCPAddr) (api.NodeInfoType, error) {
 	args := FindSuccessorRPCArgs{}
 	reply := FindSuccessorRPCReply{}
+	args.ID = ID
 	
 	err := call("TransportNode.FindSuccessor", addr, &args, &reply)
 	return reply.Successor, err
@@ -28,10 +29,10 @@ func (tp *TransportNode) FindSuccessor(args *FindSuccessorRPCArgs, reply *FindSu
 	ID := args.ID
 	ourID := tp.Node.NodeInfo.ID
 	succ := tp.Node.Successor
-	log.Printf("%v\n", succ)
+	log.Printf("lel %v\n", succ)
 	succID := succ.ID
 
-	log.Printf("sugma %v %v %v\n", ID, ourID, succID)
+	log.Printf("sugma %v | %v | %v\n", ID, ourID, succID)
 	if hashing.SBetween(ourID, ID, succID, false) {
 		reply.Successor = succ
 	} else {

@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"net"
 	"github.com/alfredfo/chord/api"
+	"log"
 )
 
 // const keySize = sha1.Size * 8
@@ -34,7 +35,10 @@ func Between(start, elt, end *big.Int, inclusive bool) bool {
 
 func NodeIDToBigInt(ID api.NodeID) *big.Int {
 	n := new(big.Int)
-    n, _ = n.SetString(ID, 10)
+    n, ok := n.SetString(ID, 10)
+	if ok == false {
+		log.Printf("NodeIDToBigInt: %v", ID)
+	}
 	return n
 }
 

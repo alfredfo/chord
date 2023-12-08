@@ -29,9 +29,9 @@ var (
 // Don't support custom node id now
 // node id is always hashed from tcp address
 func NewNode(addr *net.TCPAddr) (*api.Node, error) {
-
 	nodeInfo := api.NodeInfoType{}
 	nodeInfo.ID = hashing.HashTcpAddressToString(addr)
+	log.Printf("%v\n", nodeInfo)
 	nodeInfo.TCPAddr = *addr
 
 	return &api.Node{
@@ -89,8 +89,6 @@ func main() {
 	c := hashing.NodeIDToBigInt(b)
 	log.Printf("%v %v %v %v\n", node.NodeInfo.ID, a, b, c)
 	
-	
-	
 	// Output Chord node information
 	log.Printf("Chord node ID: %s\n", node.NodeInfo.ID)
 	log.Printf("Bind address: %s\n", bindAddr)
@@ -98,28 +96,7 @@ func main() {
 	go serve(&tp)
 
 	if joinAddr != "" {
-		joinTCPAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", joinAddr, joinPort))
-		if err != nil {
-			log.Printf("Failed to resolve tcp address to join, ip:%v, port:%v, err: %v", joinAddr, joinPort, err)
-			return
-		}
-		
-		log.Printf("joining ring\n")
-		succ, pred, err := transport.SendJoin(node, joinTCPAddr)
-		if err != nil {
-			log.Println("transport.SendJoin err: ", err)
-		}
-		// set successor and predecessor for the current node,
-		// since SendJoin only change info at the sucessor node side
-		node.Successor = succ
-		node.Predecessor = pred
-
-		// tell predecessor to change sucessor to the current node
-		//log.Printf("Tell node: %v to change sucessor to me: %v, since it's my predecessor now", succ, node.NodeInfo)
-		//err = transport.SendChangeSucessor(node, &succ.TCPAddr)
-		//if err != nil {
-		//		log.Println(err)
-		//}
+		join(node, joinAddr, joinPort)
 	} else {
 		log.Println("Creating a new ring")
 		// if it's a new ring, pionter the predecessor and sucessor to itself
@@ -137,6 +114,26 @@ func main() {
 		time.Sleep(time.Second)
 	}
 }
+
+
+func join(node *api.Node, joinAddr string, joinPort int) {
+	joinTCPAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", joinAddr, joinPort))
+		if err != nil {
+			log.Printf("Failed to resolve tcp address to join, ip:%v, port:%v, err: %v", joinAddr, joinPort, err)
+			return
+		}
+		
+		log.Printf("joining ring\n")
+		succ, pred, err := transport.SendJoin(node, joinTCPAddr)
+		if err != nil {
+			log.Println("transport.SendJoin err: ", err)
+		}
+		// set successor and predecessor for the current node,
+		// since SendJoin only change info at the sucessor node side
+		node.Successor = succ
+		node.Predecessor = pred
+}
+
 
 func MPrintf(format string, args ...interface{}) {
 	message := "[main] " + fmt.Sprintf(format, args...)
