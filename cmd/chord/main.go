@@ -42,13 +42,13 @@ func NewNode(sid string, addr *net.TCPAddr) (*api.Node, error) {
 
 	return &api.Node{
 		ID:          id,
-		Successor:   api.NodeAddress{},
-		Predecessor: api.NodeAddress{},
+		Successor:   nil,
+		Predecessor: nil,
 		FingerTable: make([]api.NodeAddress, m),
 		Bucket:      api.Bucket{},
 		Address:     addr,
 	}, nil
-	
+
 }
 
 func main() {
@@ -108,7 +108,10 @@ func main() {
 
 	} else {
 		log.Println("Creating a new ring")
-		node.Successor = node.ID
+		// if it's a new ring, pionter the predecessor and sucessor to itself
+		succ := make(map[string]net.TCPAddr)
+		succ[node.ID.String()] = *bindTcpAddr
+		node.Successor = succ
 	}
 
 	go stabilizeTimer(stabilizeTime)
@@ -131,10 +134,10 @@ func cli(bindAddr string, bindPort int) {
 		if len(command) != 0 {
 			fmt.Println("You entered: ", command)
 			splits := strings.Split(command, " ")
-		  	
-      var addr *net.TCPAddr
-      var err error
-      switch splits[0] {
+
+			var addr *net.TCPAddr
+			var err error
+			switch splits[0] {
 			case "set":
 				key := splits[1]
 				val := splits[2]
@@ -151,28 +154,28 @@ func cli(bindAddr string, bindPort int) {
 				transport.SendSet(api.Key(key), api.Value(val), addr)
 			case "get":
 				key := splits[1]
-        if len(splits) > 2 {
-          laddr := splits[2]
-          lport := splits[3]
-          addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", laddr, lport))
-        } else {
-          addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", bindAddr, bindPort))
-        }
+				if len(splits) > 2 {
+					laddr := splits[2]
+					lport := splits[3]
+					addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", laddr, lport))
+				} else {
+					addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", bindAddr, bindPort))
+				}
 				val, err := transport.SendGet(api.Key(key), addr)
 				if err != nil {
 					log.Println(err)
 					continue
 				}
 				log.Printf("Value for key %v is: %v", key, val)
-      case "delete":
-        key := splits[1]
-        if len(splits) > 2 {
-          laddr := splits[2]
-          lport := splits[3]
-          addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", laddr, lport))
-        } else {
-          addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", bindAddr, bindPort))
-        }
+			case "delete":
+				key := splits[1]
+				if len(splits) > 2 {
+					laddr := splits[2]
+					lport := splits[3]
+					addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", laddr, lport))
+				} else {
+					addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", bindAddr, bindPort))
+				}
 				val, err := transport.SendDelete(api.Key(key), addr)
 				if err != nil {
 					log.Println(err)

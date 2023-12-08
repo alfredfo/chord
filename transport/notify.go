@@ -1,14 +1,16 @@
 package transport
 
 import (
-	"github.com/alfredfo/chord/api"
 	"log"
+	"net"
+
+	"github.com/alfredfo/chord/api"
 )
 
 type NotifyRPCArgs struct{}
 
 type NotifyRPCReply struct {
-	Successor api.NodeAddress
+	Successor map[string]net.TCPAddr
 }
 
 func (tp *TransportNode) Notify(args *NotifyRPCArgs, reply *NotifyRPCReply) error {

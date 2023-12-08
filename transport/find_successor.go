@@ -21,6 +21,6 @@ func SendFindSuccessor(ID api.NodeAddress, addr *net.TCPAddr) (api.NodeAddress, 
 	args := FindSuccessorRPCArgs{}
 	reply := FindSuccessorRPCReply{}
 	err := call("TransportNode.FindSuccessor", addr, &args, &reply)
-	
+
 	return reply.Successor, err
 }
