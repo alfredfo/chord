@@ -26,16 +26,16 @@ var (
 	mutex                sync.Mutex
 )
 
-// Don't support custom node id now 
+// Don't support custom node id now
 // node id is always hashed from tcp address
 func NewNode(addr *net.TCPAddr) (*api.Node, error) {
-  
-  nodeInfo := api.NodeInfoType{}
-	nodeInfo.ID = hashing.HashTcpAddressToString(addr)  
-  nodeInfo.TCPAddr = *addr 
+
+	nodeInfo := api.NodeInfoType{}
+	nodeInfo.ID = hashing.HashTcpAddressToString(addr)
+	nodeInfo.TCPAddr = *addr
 
 	return &api.Node{
-	  NodeInfo: nodeInfo,	
+		NodeInfo:    nodeInfo,
 		Successor:   api.NodeInfoType{},
 		Predecessor: api.NodeInfoType{},
 		FingerTable: make([]api.NodeInfoType, m),
@@ -84,6 +84,13 @@ func main() {
 	}
 	tp.Node = node
 
+	a := hashing.NodeIDToBigInt(node.NodeInfo.ID)
+	b := a.String()
+	c := hashing.NodeIDToBigInt(b)
+	log.Printf("%v %v %v %v\n", node.NodeInfo.ID, a, b, c)
+	
+	
+	
 	// Output Chord node information
 	log.Printf("Chord node ID: %s\n", node.NodeInfo.ID)
 	log.Printf("Bind address: %s\n", bindAddr)
@@ -96,45 +103,28 @@ func main() {
 			log.Printf("Failed to resolve tcp address to join, ip:%v, port:%v, err: %v", joinAddr, joinPort, err)
 			return
 		}
-    
-    // ask the join node to find the sucessor of node args.NodeInfo
-  // argsf := FindSuccessorRPCArgs{}
-  // replyf := FindSuccessorRPCReply{}
-
-  // err := tp.FindSuccessor(&argsf, &replyf)
-  // if err != nil {
-  //   log.Println(err)
-  // }
-    
-  // log.Println("finding sucessor first before join...")
-    // succ, err := transport.SendFindSuccessor(node, joinTCPAddr)
-    // if err != nil {
-    //   log.Println(err)
-    // }
-    // log.Printf("[main] successor found: %v\n", succ)
-     
-
+		
 		log.Printf("joining ring\n")
-    succ, pred, err := transport.SendJoin(node, joinTCPAddr)
-    if err != nil {
-      log.Println("transport.SendJoin err: ", err)
-    }
-    // set successor and predecessor for the current node,
-    // since SendJoin only change info at the sucessor node side
-    node.Successor = succ
-    node.Predecessor = pred
+		succ, pred, err := transport.SendJoin(node, joinTCPAddr)
+		if err != nil {
+			log.Println("transport.SendJoin err: ", err)
+		}
+		// set successor and predecessor for the current node,
+		// since SendJoin only change info at the sucessor node side
+		node.Successor = succ
+		node.Predecessor = pred
 
-    // tell predecessor to change sucessor to the current node
-    log.Printf("Tell node: %v to change sucessor to me: %v, since it's my predecessor now", succ, node.NodeInfo)
-    err = transport.SendChangeSucessor(node, &succ.TCPAddr)
-    if err != nil {
-      log.Println(err)
-    }
+		// tell predecessor to change sucessor to the current node
+		//log.Printf("Tell node: %v to change sucessor to me: %v, since it's my predecessor now", succ, node.NodeInfo)
+		//err = transport.SendChangeSucessor(node, &succ.TCPAddr)
+		//if err != nil {
+		//		log.Println(err)
+		//}
 	} else {
 		log.Println("Creating a new ring")
 		// if it's a new ring, pionter the predecessor and sucessor to itself
-	  node.Successor = node.NodeInfo 
-    node.Predecessor = node.NodeInfo
+		node.Successor = node.NodeInfo
+		node.Predecessor = node.NodeInfo
 	}
 
 	go stabilizeTimer(stabilizeTime)

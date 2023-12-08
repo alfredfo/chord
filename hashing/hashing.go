@@ -2,9 +2,9 @@ package hashing
 
 import (
 	"crypto/sha1"
-	// "github.com/alfredfo/chord/api"
 	"math/big"
 	"net"
+	"github.com/alfredfo/chord/api"
 )
 
 // const keySize = sha1.Size * 8
@@ -23,6 +23,33 @@ var hashMod = new(big.Int).Exp(big.NewInt(2), big.NewInt(keySize), nil)
 // 	return new(big.Int).Mod(sum, hashMod)
 // }
 // 
+
+func Between(start, elt, end *big.Int, inclusive bool) bool {
+    if end.Cmp(start) > 0 {
+        return (start.Cmp(elt) < 0 && elt.Cmp(end) < 0) || (inclusive && elt.Cmp(end) == 0)
+    } else {
+        return start.Cmp(elt) < 0 || elt.Cmp(end) < 0 || (inclusive && elt.Cmp(end) == 0)
+    }
+}
+
+func NodeIDToBigInt(ID api.NodeID) *big.Int {
+	n := new(big.Int)
+    n, _ = n.SetString(ID, 10)
+	return n
+}
+
+func SBetween(sstart, selt, send api.NodeID, inclusive bool) bool {
+	start := NodeIDToBigInt(sstart)
+	elt := NodeIDToBigInt(selt)
+	end := NodeIDToBigInt(send)
+	
+    if end.Cmp(start) > 0 {
+        return (start.Cmp(elt) < 0 && elt.Cmp(end) < 0) || (inclusive && elt.Cmp(end) == 0)
+    } else {
+        return start.Cmp(elt) < 0 || elt.Cmp(end) < 0 || (inclusive && elt.Cmp(end) == 0)
+    }
+}
+
 func HashStringToBigInt(elt string) *big.Int {
 	hasher := sha1.New()
 	hasher.Write([]byte(elt))

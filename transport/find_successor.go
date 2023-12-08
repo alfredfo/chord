@@ -1,24 +1,65 @@
 package transport
 
-// import (
-//   "log"
-// 	"net"
-// 	"strconv"
-// 
-// 	"github.com/alfredfo/chord/api"
-// )
-// 
-// type FindSuccessorRPCArgs struct {
-// 	ToJoinNode map[string]net.TCPAddr // node to join
-//   BeginNode map[string]net.TCPAddr
-// }
-// type FindSuccessorRPCReply struct {
-// 	Successor map[string]net.TCPAddr
-// }
+import (
+	"net"
+
+	"github.com/alfredfo/chord/api"
+	"github.com/alfredfo/chord/hashing"
+	"log"
+)
+
+type FindSuccessorRPCArgs struct {
+	ID api.NodeID
+}
+
+type FindSuccessorRPCReply struct {
+	Successor api.NodeInfoType
+}
+
+func SendFindSuccessor(ID api.NodeID, addr *net.TCPAddr) (api.NodeInfoType, error) {
+	args := FindSuccessorRPCArgs{}
+	reply := FindSuccessorRPCReply{}
+	
+	err := call("TransportNode.FindSuccessor", addr, &args, &reply)
+	return reply.Successor, err
+}
+
+func (tp *TransportNode) FindSuccessor(args *FindSuccessorRPCArgs, reply *FindSuccessorRPCReply) error {
+	ID := args.ID
+	ourID := tp.Node.NodeInfo.ID
+	succ := tp.Node.Successor
+	log.Printf("%v\n", succ)
+	succID := succ.ID
+
+	log.Printf("sugma %v %v %v\n", ID, ourID, succID)
+	if hashing.SBetween(ourID, ID, succID, false) {
+		reply.Successor = succ
+	} else {
+		nodeInfo, err := SendFindSuccessor(ID, &tp.Node.Successor.TCPAddr)
+		if err != nil {
+			return err
+		}
+		reply.Successor = nodeInfo
+	}
+
+	return nil
+}
+
+
+
+// n.find successor(id)
+// if (id ∈ (n,successor])
+// return successor;
+// else
+// n
+// 0 = closest preceding node(id);
+// return n
+// 0
+// .find successor(id);
 
 // func (tp *TransportNode) FindSuccessor(args *FindSuccessorRPCArgs, reply *FindSuccessorRPCReply) error {
 //   var (
-//     joinID int 
+//     joinID int
 //     succID int
 //     predID int
 //     err error
@@ -26,47 +67,47 @@ package transport
 //   // base case, when the cursive call returns
 //   for k, _ := range args.ToJoinNode {
 //     log.Printf("join k: %v", k)
-//     joinID, err = strconv.Atoi(k) 
+//     joinID, err = strconv.Atoi(k)
 //     if err != nil {
 //       log.Println(err)
 //     }
 //   }
-//   
+//
 //   for k, _ := range tp.Node.Successor {
 //     succID, err = strconv.Atoi(k)
 //     if err != nil {
 //       log.Println(err)
-// 
+//
 //     }
 //   }
-// 
+//
 //   for k, _ := range tp.Node.Predecessor {
 //     predID, err = strconv.Atoi(k)
 //     if err != nil {
 //       log.Println(err)
-// 
+//
 //     }
 //   }
-// 
-// 
+//
+//
 //   currID, err := strconv.Atoi(tp.Node.ID.String())
 //   if err != nil {
-//     log.Println(err) 
+//     log.Println(err)
 //   }
 //   log.Printf("[find_sucessor] asking %v and it's succ: %v what should be: %v's sucessor", currID, succID, joinID)
-//   
+//
 //   // only one Node
 //   if succID == currID {
-//     reply.Successor = tp.Node.Successor 
+//     reply.Successor = tp.Node.Successor
 //     return nil
 //   }
-//   
+//
 //   // TODO when to terminate recursive call
-//   // max_relay := 10 // max time to ask successor 
+//   // max_relay := 10 // max time to ask successor
 //   // if joinID > currID && joinID <= succID {
 //   //   log.Printf("successor found!, %v is the sucessor of %v", args.ToJoinNode, tp.Node.Successor)
-//   //   reply.Successor = tp.Node.Successor 
-//   //   return nil 
+//   //   reply.Successor = tp.Node.Successor
+//   //   return nil
 //   // } else {
 //   //   curr := tp.Node.Successor
 //   //   // recursive call
@@ -80,8 +121,8 @@ package transport
 //   if joinID > currID {
 //     if joinID <= succID {
 //       log.Printf("successor found!, %v is the sucessor of %v", args.ToJoinNode, tp.Node.Successor)
-//       reply.Successor = tp.Node.Successor 
-//       return nil 
+//       reply.Successor = tp.Node.Successor
+//       return nil
 //     } else {
 //       curr := tp.Node.Successor
 //       // recursive call
@@ -92,10 +133,10 @@ package transport
 //         }
 //       }
 //     }
-//   } else { // joinID < currID 
+//   } else { // joinID < currID
 //     if joinID > predID {
 //       log.Printf("successor found!, %v is the sucessor of %v", args.ToJoinNode, tp.Node.Predecessor)
-//         reply.Successor = tp.Node.Predecessor 
+//         reply.Successor = tp.Node.Predecessor
 //     } else { // joinID <= predID
 //       curr := tp.Node.Predecessor
 //       // recursive call
@@ -105,23 +146,14 @@ package transport
 //           log.Println(err)
 //         }
 //       }
-//     } 
+//     }
 //   }
-// 
+//
 // 	return nil
 // }
-// 
-// func SendFindSuccessor(node *api.Node, addr *net.TCPAddr) (map[string]net.TCPAddr, error) {
-// 	args := FindSuccessorRPCArgs{}
-//   
-//   nodeinfo := make(map[string]net.TCPAddr)
-//   nodeinfo[node.ID.String()] = *node.Address
-//   args.ToJoinNode = nodeinfo
-// 	reply := FindSuccessorRPCReply{}
-// 	err := call("TransportNode.FindSuccessor", addr, &args, &reply)
-// 	return reply.Successor, err
-// }
-// 
-// 
-// 
-// 
+//
+
+//
+//
+//
+//
