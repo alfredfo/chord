@@ -87,12 +87,13 @@ func main() {
 	a := hashing.NodeIDToBigInt(node.NodeInfo.ID)
 	b := a.String()
 	c := hashing.NodeIDToBigInt(b)
-	log.Printf("%v %v %v %v\n", node.NodeInfo.ID, a, b, c)	
-	
+	log.Printf("%v %v %v %v\n", node.NodeInfo.ID, a, b, c)
+
 	// Output Chord node information
 	log.Printf("Chord node ID: %s\n", node.NodeInfo.ID)
 	log.Printf("Bind address: %s\n", bindAddr)
 	log.Printf("Bind port: %d\n", bindPort)
+
 	go serve(&tp)
 
 	if joinAddr != "" {
@@ -115,7 +116,6 @@ func main() {
 	}
 }
 
-
 func join(node *api.Node, joinAddr string, joinPort int) {
 	joinTCPAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", joinAddr, joinPort))
 	if err != nil {
@@ -123,34 +123,30 @@ func join(node *api.Node, joinAddr string, joinPort int) {
 		return
 	}
 
-	
-	
 	log.Printf("joining ring\n")
 	succ, err := transport.SendJoin(node, joinTCPAddr)
 	if err != nil {
 		log.Println("transport.SendJoin err: ", err)
 	}
 
-  kvmap, err := transport.SendCopyData(node.NodeInfo, &succ.TCPAddr)
-  log.Println("Received kvmap to store...", kvmap)
-  
-  err = transport.SendStoreData(kvmap, &node.NodeInfo.TCPAddr)
+	kvmap, err := transport.SendCopyData(node.NodeInfo, &succ.TCPAddr)
+	log.Println("Received kvmap to store...", kvmap)
 
-  if err != nil {
-    log.Println(err)
-  }
-  // TODO when to delete the key value pair from successor after we stored
-   
+	err = transport.SendStoreData(kvmap, &node.NodeInfo.TCPAddr)
+
+	if err != nil {
+		log.Println(err)
+	}
+	// TODO when to delete the key value pair from successor after we stored
+
 	log.Printf("asd")
 	node.Successor = succ
 	//transport.SendChangeSucessor(succ, &succ.TCPAddr)
 	log.Printf("asd2")
-  
 	// set successor and predecessor for the current node,
 	// since SendJoin only change info at the sucessor node side
 	node.Successor = succ
 }
-
 
 func MPrintf(format string, args ...interface{}) {
 	message := "[main] " + fmt.Sprintf(format, args...)

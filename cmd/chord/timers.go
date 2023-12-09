@@ -9,7 +9,7 @@ import (
 	"github.com/alfredfo/chord/transport"
 )
 
-func stabilizeTimer(node *api.Node, ms int) {
+func stabilizeTimer(node *api.Node, ms int, start chan bool) {
 	// log.Printf("fin")
 	for !finished {
 		// log.Printf("fina")
@@ -17,29 +17,31 @@ func stabilizeTimer(node *api.Node, ms int) {
 
 		pred, err := transport.SendAskPredecessor(&node.Successor.TCPAddr)
 		if err != nil {
+			node.Successor = node.NodeInfo
 			log.Printf("error asking for predecessor in stabilize %v", err)
-		}
-		x := pred
+		} else {
+			x := pred
 
-		if hashing.SBetween(node.NodeInfo.ID, x.ID, node.Successor.ID, false) {
-			node.Successor = x
+			if hashing.SBetween(node.NodeInfo.ID, x.ID, node.Successor.ID, false) {
+				node.Successor = x
+			}
+			// log.Printf("stab %v", pred)
+			transport.SendNotify(node, node.Successor)
 		}
-		// log.Printf("stab %v", pred)
-		transport.SendNotify(node, node.Successor)
 	}
-	
+
 }
 
 func checkPredecessorTimer(node *api.Node, ms int) {
 	for !finished {
-    // log.Println("===========Check Predecessor==========")
+		// log.Println("===========Check Predecessor==========")
 		time.Sleep(time.Millisecond * time.Duration(ms))
-    err := transport.SendCheckPredecessor(&node.Predecessor.TCPAddr)
-    
-    if err != nil {
-      log.Printf("Check predecessor failed: %v, set predecessor to nil.", err)
-      node.Predecessor = api.NodeInfoType{}
-    }
+		err := transport.SendCheckPredecessor(&node.Predecessor.TCPAddr)
+
+		if err != nil {
+			log.Printf("Check predecessor failed: %v, set predecessor to nil.", err)
+			node.Predecessor = api.NodeInfoType{}
+		}
 
 	}
 }
