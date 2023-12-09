@@ -21,8 +21,8 @@ type GetRPCReply struct {
 }
 
 func (tp *TransportNode) Set(args *SetRPCArgs, reply *SetRPCReply) error {
-	// tp.Node.Mu.Lock()
-	// defer tp.Node.Mu.Unlock()
+	tp.Node.Mu.Lock()
+	defer tp.Node.Mu.Unlock()
   log.Printf("set\n")
 	tp.Node.Bucket[args.Key] = args.Value
 	log.Printf("current val in node %v bucket: %v", tp.Node.NodeInfo, tp.Node.Bucket)
@@ -30,15 +30,15 @@ func (tp *TransportNode) Set(args *SetRPCArgs, reply *SetRPCReply) error {
 }
 
 func (tp *TransportNode) Get(args *GetRPCArgs, reply *GetRPCReply) error {
-	// tp.Node.Mu.Lock()
-	// defer tp.Node.Mu.Unlock()
+	tp.Node.Mu.Lock()
+	defer tp.Node.Mu.Unlock()
 	reply.Value = tp.Node.Bucket[args.Key]
 	return nil
 }
 
 func (tp *TransportNode) Delete(args *GetRPCArgs, reply *GetRPCReply) error {
-	// tp.Node.Mu.Lock()
-	// defer tp.Node.Mu.Unlock()
+	tp.Node.Mu.Lock()
+	defer tp.Node.Mu.Unlock()
 	reply.Value = tp.Node.Bucket[args.Key]
 	delete(tp.Node.Bucket, args.Key)
 	log.Printf("current val in node %v bucket: %v", tp.Node.NodeInfo, tp.Node.Bucket)
