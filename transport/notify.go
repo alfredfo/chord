@@ -14,7 +14,7 @@ type NotifyRPCArgs struct{
 type NotifyRPCReply struct {}
 
 func (tp *TransportNode) Notify(args *NotifyRPCArgs, reply *NotifyRPCReply) error {
-	log.Println("recieved notify call")
+	// log.Println("recieved notify call")
 
 	ni := args.NodeInfo
 	n := ni.ID
@@ -30,7 +30,7 @@ func (tp *TransportNode) Notify(args *NotifyRPCArgs, reply *NotifyRPCReply) erro
 func SendNotify(node *api.Node, other api.NodeInfoType) error {
 	args := NotifyRPCArgs{}
 	reply := NotifyRPCReply{}
-	log.Printf("Notifying ring at %v with ID %v\n", node.NodeInfo, node.NodeInfo)
+	// log.Printf("Notifying ring at %v with ID %v\n", node.NodeInfo, node.NodeInfo)
 
 	args.NodeInfo = node.NodeInfo
 	
@@ -38,6 +38,6 @@ func SendNotify(node *api.Node, other api.NodeInfoType) error {
 	if err != nil {
 		log.Printf("error sending Notify to %v: %v\n", node.NodeInfo, err)
 	}
-	log.Printf("sugma balls\n")
+	// log.Printf("sugma balls\n")
 	return nil
 }

@@ -29,7 +29,7 @@ func (tp *TransportNode) FindSuccessor(args *FindSuccessorRPCArgs, reply *FindSu
 	ID := args.ID
 	ourID := tp.Node.NodeInfo.ID
 	succ := tp.Node.Successor
-	log.Printf("lel %v\n", succ)
+	// log.Printf("lel %v\n", succ)
 	succID := succ.ID
 
 	if ourID == succID {

@@ -10,9 +10,9 @@ import (
 )
 
 func stabilizeTimer(node *api.Node, ms int) {
-	log.Printf("fin")
+	// log.Printf("fin")
 	for !finished {
-		log.Printf("fina")
+		// log.Printf("fina")
 		time.Sleep(time.Millisecond * time.Duration(ms))
 
 		pred, err := transport.SendAskPredecessor(&node.Successor.TCPAddr)
@@ -24,7 +24,7 @@ func stabilizeTimer(node *api.Node, ms int) {
 		if hashing.SBetween(node.NodeInfo.ID, x.ID, node.Successor.ID, false) {
 			node.Successor = x
 		}
-		log.Printf("stab %v", pred)
+		// log.Printf("stab %v", pred)
 		transport.SendNotify(node, node.Successor)
 	}
 	
@@ -32,7 +32,7 @@ func stabilizeTimer(node *api.Node, ms int) {
 
 func checkPredecessorTimer(node *api.Node, ms int) {
 	for !finished {
-    log.Println("===========Check Predecessor==========")
+    // log.Println("===========Check Predecessor==========")
 		time.Sleep(time.Millisecond * time.Duration(ms))
     err := transport.SendCheckPredecessor(&node.Predecessor.TCPAddr)
     
@@ -47,7 +47,7 @@ func checkPredecessorTimer(node *api.Node, ms int) {
 func fixFingersTimer(node *api.Node, ms int) {
 	for !finished {
 		time.Sleep(time.Millisecond * time.Duration(ms))
-		node.Mu.Lock()
-		defer node.Mu.Unlock()
+		// node.Mu.Lock()
+		// defer node.Mu.Unlock()
 	}
 }
