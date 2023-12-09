@@ -146,6 +146,13 @@ func join(node *api.Node, joinAddr string, joinPort int) {
 	// set successor and predecessor for the current node,
 	// since SendJoin only change info at the sucessor node side
 	node.Successor = succ
+
+	// delete old data from successor
+	err2 := transport.SendDeleteOldData(node.NodeInfo, &succ.TCPAddr)
+	if err2 != nil {
+		log.Println(err)
+	}
+
 }
 
 func MPrintf(format string, args ...interface{}) {

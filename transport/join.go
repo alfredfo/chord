@@ -15,8 +15,8 @@ type JoinRPCArgs struct {
 }
 
 type JoinRPCReply struct {
-	Successor  api.NodeInfoType
-	Ok         bool
+	Successor api.NodeInfoType
+	Ok        bool
 }
 
 // Join only deal with join logic, the tp.Node must be args.NodeInfo' successor
@@ -30,7 +30,7 @@ func (tp *TransportNode) Join(args *JoinRPCArgs, reply *JoinRPCReply) error {
 	log.Printf("suc %v\n", tp.Node.Successor)
 	r, _ := SendFindSuccessor(args.ToJoinNode.ID, &tp.Node.Successor.TCPAddr)
 	reply.Successor = r
-	
+
 	log.Printf("Join: %v\n", tp.Node.NodeInfo)
 	log.Printf("Join: %v\n", tp.Node.Successor)
 	return nil
@@ -48,11 +48,11 @@ func SendJoin(node *api.Node, addr *net.TCPAddr) (api.NodeInfoType, error) {
 }
 
 type CopyDataRPCArgs struct {
-  NodeInfo api.NodeInfoType
+	NodeInfo api.NodeInfoType
 }
 
 type CopyDataRPCReply struct {
-  Data  map[api.Key]api.Value 
+	Data map[api.Key]api.Value
 }
 
 func (tp *TransportNode) CopyData(args *CopyDataRPCArgs, reply *CopyDataRPCReply) error {
@@ -60,14 +60,29 @@ func (tp *TransportNode) CopyData(args *CopyDataRPCArgs, reply *CopyDataRPCReply
 	tp.Node.Mu.Lock()
 	defer tp.Node.Mu.Unlock()
 
-  reply.Data = make(map[api.Key]api.Value)
-  for k, v := range tp.Node.Bucket {
-    keyHash := hashing.HashStringToBigInt(k).String()
-    log.Printf("==== %v %v %v\n", tp.Node.NodeInfo.ID, keyHash, args.NodeInfo.ID)
-    if hashing.SBetween(tp.Node.NodeInfo.ID, keyHash, args.NodeInfo.ID, true) {
-      reply.Data[k] = v
-    } 
-  }
+	reply.Data = make(map[api.Key]api.Value)
+	for k, v := range tp.Node.Bucket {
+		keyHash := hashing.HashStringToBigInt(k).String()
+		log.Printf("==== %v %v %v\n", tp.Node.NodeInfo.ID, keyHash, args.NodeInfo.ID)
+		if hashing.SBetween(tp.Node.NodeInfo.ID, keyHash, args.NodeInfo.ID, true) {
+			reply.Data[k] = v
+		}
+	}
+
+	return nil
+}
+
+func (tp *TransportNode) deleteOldData(args *CopyDataRPCArgs, reply *CopyDataRPCReply) error {
+	log.Printf("Node %v is deleting old data\n", tp.Node.NodeInfo)
+	tp.Node.Mu.Lock()
+	defer tp.Node.Mu.Unlock()
+
+	for k, _ := range tp.Node.Bucket {
+		keyHash := hashing.HashStringToBigInt(k).String()
+		if hashing.SBetween(tp.Node.NodeInfo.ID, keyHash, args.NodeInfo.ID, true) {
+			delete(tp.Node.Bucket, k)
+		}
+	}
 
 	return nil
 }
@@ -81,9 +96,17 @@ func SendCopyData(nodeInfo api.NodeInfoType, addr *net.TCPAddr) (map[api.Key]api
 	return reply.Data, err
 }
 
+func SendDeleteOldData(nodeInfo api.NodeInfoType, addr *net.TCPAddr) error {
+	args := CopyDataRPCArgs{}
+	args.NodeInfo = nodeInfo
+	reply := CopyDataRPCReply{}
+
+	err := call("TransportNode.deleteOldData", addr, &args, &reply)
+	return err
+}
 
 type StoreDataRPCArgs struct {
-  Data map[api.Key]api.Value
+	Data map[api.Key]api.Value
 }
 
 type StoreDataRPCReply struct {
@@ -94,9 +117,9 @@ func (tp *TransportNode) StoreData(args *StoreDataRPCArgs, reply *StoreDataRPCRe
 	tp.Node.Mu.Lock()
 	defer tp.Node.Mu.Unlock()
 
-  for k, v := range args.Data {
-    tp.Node.Bucket[k] = v
-  }
+	for k, v := range args.Data {
+		tp.Node.Bucket[k] = v
+	}
 
 	return nil
 }
@@ -113,7 +136,6 @@ type ChangeSuccessorRPCArgs struct {
 	NewSuccessor api.NodeInfoType
 }
 type ChangeSuccessorRPCReply struct {
-	
 }
 
 func (tp *TransportNode) ChangeSucessor(args *ChangeSuccessorRPCArgs, reply *ChangeSuccessorRPCReply) error {
