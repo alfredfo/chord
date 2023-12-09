@@ -26,6 +26,7 @@ func SendFindSuccessor(ID api.NodeID, addr *net.TCPAddr) (api.NodeInfoType, erro
 }
 
 func ClosestPrecedingNode(node *api.Node, ID api.NodeID) api.NodeInfoType {
+	// TODO: actual value ?
 	for i := 8; i > 0; i-- {
 		finger := node.FingerTable[i]
 		if finger.ID != "" {
@@ -59,10 +60,13 @@ func (tp *TransportNode) FindSuccessor(args *FindSuccessorRPCArgs, reply *FindSu
 	if hashing.SBetween(ourID, ID, succID, true) {
 		reply.Successor = succ
 	} else {
-		nodeInfo, err := SendFindSuccessor(ID, &tp.Node.Successor.TCPAddr)
+		closestNode := ClosestPrecedingNode(tp.Node, ID)
+
+		nodeInfo, err := SendFindSuccessor(ID, &closestNode.TCPAddr)
 		if err != nil {
 			return err
 		}
+
 		reply.Successor = nodeInfo
 	}
 
