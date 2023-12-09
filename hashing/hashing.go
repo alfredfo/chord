@@ -2,40 +2,40 @@ package hashing
 
 import (
 	"crypto/sha1"
-	"math/big"
-	"net"
 	"github.com/alfredfo/chord/api"
 	"log"
+	"math/big"
+	"net"
 )
 
-// const keySize = sha1.Size * 8
-const keySize = sha1.Size / 2
+const keySize = sha1.Size * 8
+
+// const keySize = sha1.Size / 2
+
 var two = big.NewInt(2)
 var hashMod = new(big.Int).Exp(big.NewInt(2), big.NewInt(keySize), nil)
 
-// 
-// func Jump(node *api.Node, fingerentry int) *api.NodeAddress {
-// 	n := big.Int(node.ID)
-// 
-// 	fingerentryminus1 := big.NewInt(int64(fingerentry) - 1)
-// 	jump := new(big.Int).Exp(two, fingerentryminus1, nil)
-// 	sum := new(big.Int).Add(&n, jump)
-// 
-// 	return new(big.Int).Mod(sum, hashMod)
-// }
-// 
+func Jump(ID api.NodeID, fingerentry int) api.NodeID {
+	n := NodeIDToBigInt(ID)
+
+	fingerentryminus1 := big.NewInt(int64(fingerentry) - 1)
+	jump := new(big.Int).Exp(two, fingerentryminus1, nil)
+	sum := new(big.Int).Add(n, jump)
+
+	return new(big.Int).Mod(sum, hashMod).String()
+}
 
 func Between(start, elt, end *big.Int, inclusive bool) bool {
-    if end.Cmp(start) > 0 {
-        return (start.Cmp(elt) < 0 && elt.Cmp(end) < 0) || (inclusive && elt.Cmp(end) == 0)
-    } else {
-        return start.Cmp(elt) < 0 || elt.Cmp(end) < 0 || (inclusive && elt.Cmp(end) == 0)
-    }
+	if end.Cmp(start) > 0 {
+		return (start.Cmp(elt) < 0 && elt.Cmp(end) < 0) || (inclusive && elt.Cmp(end) == 0)
+	} else {
+		return start.Cmp(elt) < 0 || elt.Cmp(end) < 0 || (inclusive && elt.Cmp(end) == 0)
+	}
 }
 
 func NodeIDToBigInt(ID api.NodeID) *big.Int {
 	n := new(big.Int)
-    n, ok := n.SetString(ID, 10)
+	n, ok := n.SetString(ID, 10)
 	if ok == false {
 		log.Printf("NodeIDToBigInt: %v", ID)
 	}
@@ -46,12 +46,12 @@ func SBetween(sstart, selt, send api.NodeID, inclusive bool) bool {
 	start := NodeIDToBigInt(sstart)
 	elt := NodeIDToBigInt(selt)
 	end := NodeIDToBigInt(send)
-	
-    if end.Cmp(start) > 0 {
-        return (start.Cmp(elt) < 0 && elt.Cmp(end) < 0) || (inclusive && elt.Cmp(end) == 0)
-    } else {
-        return start.Cmp(elt) < 0 || elt.Cmp(end) < 0 || (inclusive && elt.Cmp(end) == 0)
-    }
+
+	if end.Cmp(start) > 0 {
+		return (start.Cmp(elt) < 0 && elt.Cmp(end) < 0) || (inclusive && elt.Cmp(end) == 0)
+	} else {
+		return start.Cmp(elt) < 0 || elt.Cmp(end) < 0 || (inclusive && elt.Cmp(end) == 0)
+	}
 }
 
 func HashStringToBigInt(elt string) *big.Int {
