@@ -130,11 +130,22 @@ func join(node *api.Node, joinAddr string, joinPort int) {
 	if err != nil {
 		log.Println("transport.SendJoin err: ", err)
 	}
+
+  kvmap, err := transport.SendCopyData(node.NodeInfo, &succ.TCPAddr)
+  log.Println("Received kvmap to store...", kvmap)
+  
+  err = transport.SendStoreData(kvmap, &node.NodeInfo.TCPAddr)
+
+  if err != nil {
+    log.Println(err)
+  }
+  // TODO when to delete the key value pair from successor after we stored
+   
 	log.Printf("asd")
 	node.Successor = succ
 	//transport.SendChangeSucessor(succ, &succ.TCPAddr)
 	log.Printf("asd2")
-
+  
 	// set successor and predecessor for the current node,
 	// since SendJoin only change info at the sucessor node side
 	node.Successor = succ
