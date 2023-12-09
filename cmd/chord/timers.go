@@ -32,9 +32,15 @@ func stabilizeTimer(node *api.Node, ms int) {
 
 func checkPredecessorTimer(node *api.Node, ms int) {
 	for !finished {
+    log.Println("===========Check Predecessor==========")
 		time.Sleep(time.Millisecond * time.Duration(ms))
-		node.Mu.Lock()
-		defer node.Mu.Unlock()
+    err := transport.SendCheckPredecessor(&node.Predecessor.TCPAddr)
+    
+    if err != nil {
+      log.Printf("Check predecessor failed: %v, set predecessor to nil.", err)
+      node.Predecessor = api.NodeInfoType{}
+    }
+
 	}
 }
 
