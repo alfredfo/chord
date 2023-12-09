@@ -20,15 +20,33 @@ func SendFindSuccessor(ID api.NodeID, addr *net.TCPAddr) (api.NodeInfoType, erro
 	args := FindSuccessorRPCArgs{}
 	reply := FindSuccessorRPCReply{}
 	args.ID = ID
-	
+
 	err := call("TransportNode.FindSuccessor", addr, &args, &reply)
 	return reply.Successor, err
 }
+
+func ClosestPrecedingNode(node *api.Node, ID api.NodeID) api.NodeInfoType {
+	for i := 8; i > 0; i-- {
+		finger := node.FingerTable[i]
+		if finger.ID != "" {
+			if hashing.SBetween(node.NodeInfo.ID, finger.ID, ID, false) {
+				return finger
+			}
+		}
+	}
+	return node.NodeInfo
+}
+
+// for i = m downto 1
+// if (finger[i] ∈ (n,id))
+// return finger[i];
+// return n;
 
 func (tp *TransportNode) FindSuccessor(args *FindSuccessorRPCArgs, reply *FindSuccessorRPCReply) error {
 	ID := args.ID
 	ourID := tp.Node.NodeInfo.ID
 	succ := tp.Node.Successor
+
 	// log.Printf("lel %v\n", succ)
 	succID := succ.ID
 
@@ -50,8 +68,6 @@ func (tp *TransportNode) FindSuccessor(args *FindSuccessorRPCArgs, reply *FindSu
 
 	return nil
 }
-
-
 
 // n.find successor(id)
 // if (id ∈ (n,successor])
