@@ -72,7 +72,7 @@ func (tp *TransportNode) CopyData(args *CopyDataRPCArgs, reply *CopyDataRPCReply
 	return nil
 }
 
-func (tp *TransportNode) deleteOldData(args *CopyDataRPCArgs, reply *CopyDataRPCReply) error {
+func (tp *TransportNode) DeleteOldData(args *CopyDataRPCArgs, reply *CopyDataRPCReply) error {
 	log.Printf("Node %v is deleting old data\n", tp.Node.NodeInfo)
 	tp.Node.Mu.Lock()
 	defer tp.Node.Mu.Unlock()
@@ -101,7 +101,7 @@ func SendDeleteOldData(nodeInfo api.NodeInfoType, addr *net.TCPAddr) error {
 	args.NodeInfo = nodeInfo
 	reply := CopyDataRPCReply{}
 
-	err := call("TransportNode.deleteOldData", addr, &args, &reply)
+	err := call("TransportNode.DeleteOldData", addr, &args, &reply)
 	return err
 }
 
