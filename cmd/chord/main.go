@@ -38,7 +38,7 @@ func NewNode(addr *net.TCPAddr) (*api.Node, error) {
 		NodeInfo:    nodeInfo,
 		Successors:  make([]api.NodeInfoType, 1),
 		Predecessor: api.NodeInfoType{},
-		FingerTable: make([]api.NodeInfoType, m),
+		FingerTable: make(map[api.NodeID]api.NodeInfoType, m),
 		Bucket:      api.Bucket{},
 	}, nil
 
@@ -108,7 +108,8 @@ func main() {
 
 	go stabilizeTimer(node, stabilizeTime)
 	go checkPredecessorTimer(node, checkPredecessorTime)
-	go fixFingersTimer(node, fixFingersTime)
+	var next int
+	go fixFingersTimer(node, fixFingersTime, &next)
 
 	cli(bindAddr, bindPort)
 

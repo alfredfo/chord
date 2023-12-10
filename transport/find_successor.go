@@ -1,11 +1,13 @@
 package transport
 
 import (
+	"math/big"
 	"net"
+
+	"log"
 
 	"github.com/alfredfo/chord/api"
 	"github.com/alfredfo/chord/hashing"
-	"log"
 )
 
 type FindSuccessorRPCArgs struct {
@@ -28,7 +30,7 @@ func SendFindSuccessor(ID api.NodeID, addr *net.TCPAddr) (api.NodeInfoType, erro
 func ClosestPrecedingNode(node *api.Node, ID api.NodeID) api.NodeInfoType {
 	// TODO: actual value ?
 	for i := 8; i > 0; i-- {
-		finger := node.FingerTable[i]
+		finger := node.FingerTable[big.NewInt(int64(i)).String()]
 		if finger.ID != "" {
 			if hashing.SBetween(node.NodeInfo.ID, finger.ID, ID, false) {
 				return finger
@@ -51,7 +53,7 @@ func (tp *TransportNode) FindSuccessor(args *FindSuccessorRPCArgs, reply *FindSu
 	}
 
 	log.Printf("sugma %v | %v | %v\n", ID, ourID, succID)
-	if hashing.SBetween(ourID, ID, succID, true) {
+	if hashing.SBetween(ourID, ID, succID, true) && succID != "" {
 		reply.Successor = succ
 	} else {
 		// FingerTable method

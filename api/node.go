@@ -17,7 +17,7 @@ type NodeInfoType struct {
 
 type Node struct {
 	NodeInfo    NodeInfoType
-	FingerTable []NodeInfoType
+	FingerTable map[NodeID]NodeInfoType
 	Predecessor NodeInfoType
 	Successors  []NodeInfoType
 	Bucket      Bucket
