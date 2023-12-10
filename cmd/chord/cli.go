@@ -38,7 +38,7 @@ func cli(bindAddr string, bindPort int) {
 				if err != nil {
 					log.Println(err)
 				}
-				transport.SendSet(api.Key(key), api.Value(val), addr)
+				transport.SendSet(api.Key(key), api.Value(val), addr, bindAddr+string(bindPort))
 			case "get":
 				key := splits[1]
 				if len(splits) > 2 {
@@ -48,7 +48,7 @@ func cli(bindAddr string, bindPort int) {
 				} else {
 					addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", bindAddr, bindPort))
 				}
-				val, err := transport.SendGet(api.Key(key), addr)
+				val, err := transport.SendGet(api.Key(key), addr, bindAddr+string(bindPort))
 				if err != nil {
 					log.Println(err)
 					continue
