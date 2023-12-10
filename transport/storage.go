@@ -108,7 +108,6 @@ func SendSet(key api.Key, value api.Value, addr *net.TCPAddr, encriptKey string)
 		log.Println(err)
 		return err
 	}
-
 	args := SetRPCArgs{}
 	log.Printf("kv: {%v, %v} will be stored at node: %v", key, value, succ)
 	args.Key = key
@@ -130,7 +129,6 @@ func SendGet(key api.Key, addr *net.TCPAddr, decriptKey string) (api.Value, erro
 		log.Println(err)
 		return []byte{}, err
 	}
-
 	args := GetRPCArgs{}
 	args.Key = key
 	reply := GetRPCReply{}
