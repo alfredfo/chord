@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"net"
 
-	"log"
+	// "log"
 
 	"github.com/alfredfo/chord/api"
 	"github.com/alfredfo/chord/hashing"
@@ -28,8 +28,7 @@ func SendFindSuccessor(ID api.NodeID, addr *net.TCPAddr) (api.NodeInfoType, erro
 }
 
 func ClosestPrecedingNode(node *api.Node, ID api.NodeID) api.NodeInfoType {
-	// TODO: actual value ?
-	for i := 8; i > 0; i-- {
+	for i := api.KeySize; i > 0; i-- {
 		finger := node.FingerTable[big.NewInt(int64(i)).String()]
 		if finger.ID != "" {
 			if hashing.SBetween(node.NodeInfo.ID, finger.ID, ID, false) {
@@ -52,7 +51,7 @@ func (tp *TransportNode) FindSuccessor(args *FindSuccessorRPCArgs, reply *FindSu
 		return nil
 	}
 
-	log.Printf("sugma %v | %v | %v\n", ID, ourID, succID)
+	// log.Printf("sugma %v | %v | %v\n", ID, ourID, succID)
 	if hashing.SBetween(ourID, ID, succID, true) && succID != "" {
 		reply.Successor = succ
 	} else {

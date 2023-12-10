@@ -10,6 +10,10 @@ type Value = string
 type Bucket map[Key]Value
 type NodeID = string
 
+const (
+  KeySize = 8
+)
+
 type NodeInfoType struct {
 	ID      NodeID
 	TCPAddr net.TCPAddr

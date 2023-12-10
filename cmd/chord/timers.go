@@ -19,6 +19,7 @@ func stabilizeTimer(node *api.Node, ms int) {
 			if len(node.Successors) > 1 {
 				node.Successors = node.Successors[1:]
 			} else {
+        log.Println("======== set succ to self ======== ")
 				node.Successors = make([]api.NodeInfoType, 0)
 				node.Successors = append(node.Successors, node.NodeInfo)
 			}
@@ -32,7 +33,7 @@ func stabilizeTimer(node *api.Node, ms int) {
 					newSuccs = append(newSuccs, x)
 					newSuccs = append(newSuccs, succs...)
 				}
-				if len(newSuccs) > 4 {
+				if len(newSuccs) > 3 {
 					newSuccs = newSuccs[:3]
 				}
 				node.Successors = newSuccs
@@ -64,7 +65,7 @@ func fixFingersTimer(node *api.Node, ms int, next *int) {
 	for !finished {
 		time.Sleep(time.Millisecond * time.Duration(ms))
 		*next = *next + 1
-		if *next > m {
+		if *next > api.KeySize {
 			*next = 1
 		}
 		j := hashing.Jump(node.NodeInfo.ID, *next)

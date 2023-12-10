@@ -8,12 +8,8 @@ import (
 	"net"
 )
 
-const keySize = sha1.Size * 8
-
-// const keySize = sha1.Size / 2
-
 var two = big.NewInt(2)
-var hashMod = new(big.Int).Exp(big.NewInt(2), big.NewInt(keySize), nil)
+var hashMod = new(big.Int).Exp(big.NewInt(2), big.NewInt(api.KeySize), nil)
 
 func Jump(ID api.NodeID, fingerentry int) api.NodeID {
 	n := NodeIDToBigInt(ID)
@@ -58,7 +54,7 @@ func HashStringToBigInt(elt string) *big.Int {
 	hasher := sha1.New()
 	hasher.Write([]byte(elt))
 	hash := new(big.Int).SetBytes(hasher.Sum(nil))
-	hash = new(big.Int).Mod(hash, big.NewInt(keySize))
+	hash = new(big.Int).Mod(hash, hashMod)
 	return hash
 }
 
