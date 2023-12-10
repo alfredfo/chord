@@ -6,7 +6,7 @@ import (
 )
 
 type Key = string
-type Value = string
+type Value = []byte
 type Bucket map[Key]Value
 type NodeID = string
 

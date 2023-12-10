@@ -3,12 +3,13 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/alfredfo/chord/api"
-	"github.com/alfredfo/chord/transport"
 	"log"
 	"net"
 	"os"
 	"strings"
+
+	"github.com/alfredfo/chord/api"
+	"github.com/alfredfo/chord/transport"
 )
 
 func cli(bindAddr string, bindPort int) {
@@ -52,7 +53,7 @@ func cli(bindAddr string, bindPort int) {
 					log.Println(err)
 					continue
 				}
-				log.Printf("Value for key %v is: %v", key, val)
+				log.Printf("Value for key %v is: %v", key, string(val))
 			case "delete":
 				key := splits[1]
 				if len(splits) > 2 {
