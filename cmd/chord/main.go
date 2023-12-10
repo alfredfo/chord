@@ -100,6 +100,7 @@ func main() {
 		node.Predecessor = node.NodeInfo
 		node.Successors = make([]api.NodeInfoType, 1)
 		node.Predecessor = node.Successors[0]
+		node.Successors[0] = node.NodeInfo
 	}
 
 	go stabilizeTimer(node, stabilizeTime)
