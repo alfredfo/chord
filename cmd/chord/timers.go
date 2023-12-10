@@ -68,7 +68,6 @@ func fixFingersTimer(node *api.Node, ms int, next *int) {
 			ni, err := transport.SendFindSuccessor(j, &node.Successors[0].TCPAddr)
 			if err == nil {
 				node.FingerTable[n-1] = ni
-				log.Printf("finger %v\n", node.FingerTable)
 			}
 		}
 	}

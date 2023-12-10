@@ -53,10 +53,10 @@ func (tp *TransportNode) FindSuccessor(args *FindSuccessorRPCArgs, reply *FindSu
 		reply.Successor = succ
 	} else {
 		// FingerTable method
-		// closestNode := ClosestPrecedingNode(tp.Node, ID)
-		// nodeInfo, err := SendFindSuccessor(ID, &closestNode.TCPAddr)
+		closestNode := ClosestPrecedingNode(tp.Node, ID)
+		nodeInfo, err := SendFindSuccessor(ID, &closestNode.TCPAddr)
 
-		nodeInfo, err := SendFindSuccessor(ID, &succ.TCPAddr)
+		// nodeInfo, err := SendFindSuccessor(ID, &succ.TCPAddr)
 
 		if err != nil {
 			return err
