@@ -1,10 +1,7 @@
 package transport
 
 import (
-	"math/big"
 	"net"
-
-	// "log"
 
 	"github.com/alfredfo/chord/api"
 	"github.com/alfredfo/chord/hashing"
@@ -29,7 +26,7 @@ func SendFindSuccessor(ID api.NodeID, addr *net.TCPAddr) (api.NodeInfoType, erro
 
 func ClosestPrecedingNode(node *api.Node, ID api.NodeID) api.NodeInfoType {
 	for i := api.KeySize; i > 0; i-- {
-		finger := node.FingerTable[big.NewInt(int64(i)).String()]
+		finger := node.FingerTable[i-1]
 		if finger.ID != "" {
 			if hashing.SBetween(node.NodeInfo.ID, finger.ID, ID, false) {
 				return finger

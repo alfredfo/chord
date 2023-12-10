@@ -11,7 +11,7 @@ type Bucket map[Key]Value
 type NodeID = string
 
 const (
-  KeySize = 8
+	KeySize = 8
 )
 
 type NodeInfoType struct {
@@ -21,7 +21,7 @@ type NodeInfoType struct {
 
 type Node struct {
 	NodeInfo    NodeInfoType
-	FingerTable map[NodeID]NodeInfoType
+	FingerTable []NodeInfoType
 	Predecessor NodeInfoType
 	Successors  []NodeInfoType
 	Bucket      Bucket

@@ -34,7 +34,7 @@ func NewNode(addr *net.TCPAddr) (*api.Node, error) {
 		NodeInfo:    nodeInfo,
 		Successors:  make([]api.NodeInfoType, 1),
 		Predecessor: api.NodeInfoType{},
-		FingerTable: make(map[api.NodeID]api.NodeInfoType, api.KeySize),
+		FingerTable: make([]api.NodeInfoType, api.KeySize),
 		Bucket:      api.Bucket{},
 	}, nil
 

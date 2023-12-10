@@ -7,7 +7,6 @@ import (
 	"github.com/alfredfo/chord/api"
 	"github.com/alfredfo/chord/hashing"
 	"github.com/alfredfo/chord/transport"
-	"math/big"
 )
 
 func stabilizeTimer(node *api.Node, ms int) {
@@ -19,7 +18,7 @@ func stabilizeTimer(node *api.Node, ms int) {
 			if len(node.Successors) > 1 {
 				node.Successors = node.Successors[1:]
 			} else {
-        log.Println("======== set succ to self ======== ")
+				log.Println("======== set succ to self ======== ")
 				node.Successors = make([]api.NodeInfoType, 0)
 				node.Successors = append(node.Successors, node.NodeInfo)
 			}
@@ -64,15 +63,13 @@ func checkPredecessorTimer(node *api.Node, ms int) {
 func fixFingersTimer(node *api.Node, ms int, next *int) {
 	for !finished {
 		time.Sleep(time.Millisecond * time.Duration(ms))
-		*next = *next + 1
-		if *next > api.KeySize {
-			*next = 1
-		}
-		j := hashing.Jump(node.NodeInfo.ID, *next)
-		ni, err := transport.SendFindSuccessor(j, &node.Successors[0].TCPAddr)
-		if err != nil {
-			node.FingerTable[big.NewInt(int64(*next)).String()] = ni
-			log.Printf("finger %v\n", node.FingerTable)
+		for n := 1; n <= api.KeySize; n++ {
+			j := hashing.Jump(node.NodeInfo.ID, n)
+			ni, err := transport.SendFindSuccessor(j, &node.Successors[0].TCPAddr)
+			if err == nil {
+				node.FingerTable[n-1] = ni
+				log.Printf("finger %v\n", node.FingerTable)
+			}
 		}
 	}
 }

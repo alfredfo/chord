@@ -14,10 +14,13 @@ var hashMod = new(big.Int).Exp(big.NewInt(2), big.NewInt(api.KeySize), nil)
 func Jump(ID api.NodeID, fingerentry int) api.NodeID {
 	n := NodeIDToBigInt(ID)
 
+	//	log.Printf("jump | n: %v", n)
 	fingerentryminus1 := big.NewInt(int64(fingerentry) - 1)
-	jump := new(big.Int).Exp(two, fingerentryminus1, nil)
-	sum := new(big.Int).Add(n, jump)
 
+	jump := new(big.Int).Exp(two, fingerentryminus1, nil)
+	//	log.Printf("jump | jump: %v", jump)
+	sum := new(big.Int).Add(n, jump)
+	//	log.Printf("jump | sum: %v", sum)
 	return new(big.Int).Mod(sum, hashMod).String()
 }
 
