@@ -23,7 +23,7 @@ type GetRPCReply struct {
 func (tp *TransportNode) Set(args *SetRPCArgs, reply *SetRPCReply) error {
 	tp.Node.Mu.Lock()
 	defer tp.Node.Mu.Unlock()
-  log.Printf("set\n")
+	log.Printf("set\n")
 	tp.Node.Bucket[args.Key] = args.Value
 	log.Printf("current val in node %v bucket: %v", tp.Node.NodeInfo, tp.Node.Bucket)
 	return nil
@@ -47,31 +47,31 @@ func (tp *TransportNode) Delete(args *GetRPCArgs, reply *GetRPCReply) error {
 
 func SendSet(key api.Key, value api.Value, addr *net.TCPAddr) error {
 	keyHash := hashing.HashStringToBigInt(key).String()
-  log.Printf("Hash value for key :%v is %v", key, keyHash)
-  succ, err := SendFindSuccessor(keyHash, addr)
-  if err != nil {
-    log.Println(err)
-    return err
-  }
+	log.Printf("Hash value for key :%v is %v", key, keyHash)
+	succ, err := SendFindSuccessor(keyHash, addr)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
 
-  args := SetRPCArgs{}
-  log.Printf("kv: {%v, %v} will be stored at node: %v", key, value, succ)  
+	args := SetRPCArgs{}
+	log.Printf("kv: {%v, %v} will be stored at node: %v", key, value, succ)
 	args.Key = key
 	args.Value = value
 	reply := SetRPCReply{}
-  log.Println("before call...")
+	log.Println("before call...")
 	return call("TransportNode.Set", &succ.TCPAddr, &args, &reply)
 }
 
 func SendGet(key api.Key, addr *net.TCPAddr) (api.Value, error) {
-  keyHash := hashing.HashStringToBigInt(key).String()
-  log.Printf("Hash value for key :%v is %v", key, keyHash)
-  succ, err := SendFindSuccessor(keyHash, addr)
-  if err != nil {
-    log.Println(err)
-    return "", err
-  }
-  
+	keyHash := hashing.HashStringToBigInt(key).String()
+	log.Printf("Hash value for key :%v is %v", key, keyHash)
+	succ, err := SendFindSuccessor(keyHash, addr)
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+
 	args := GetRPCArgs{}
 	args.Key = key
 	reply := GetRPCReply{}
@@ -81,14 +81,14 @@ func SendGet(key api.Key, addr *net.TCPAddr) (api.Value, error) {
 
 func SendDelete(key api.Key, addr *net.TCPAddr) (api.Value, error) {
 	keyHash := hashing.HashStringToBigInt(key).String()
-  log.Printf("Hash value for key :%v is %v", key, keyHash)
-  succ, err := SendFindSuccessor(keyHash, addr)
-  if err != nil {
-    log.Println(err)
-    return "", err
-  }
-  
-  args := GetRPCArgs{}
+	log.Printf("Hash value for key :%v is %v", key, keyHash)
+	succ, err := SendFindSuccessor(keyHash, addr)
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+
+	args := GetRPCArgs{}
 	args.Key = key
 	reply := GetRPCReply{}
 	err = call("TransportNode.Delete", &succ.TCPAddr, &args, &reply)

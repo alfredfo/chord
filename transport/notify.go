@@ -7,11 +7,11 @@ import (
 	"github.com/alfredfo/chord/hashing"
 )
 
-type NotifyRPCArgs struct{
+type NotifyRPCArgs struct {
 	NodeInfo api.NodeInfoType
 }
 
-type NotifyRPCReply struct {}
+type NotifyRPCReply struct{}
 
 func (tp *TransportNode) Notify(args *NotifyRPCArgs, reply *NotifyRPCReply) error {
 	// log.Println("recieved notify call")
@@ -19,11 +19,11 @@ func (tp *TransportNode) Notify(args *NotifyRPCArgs, reply *NotifyRPCReply) erro
 	ni := args.NodeInfo
 	n := ni.ID
 	pred := tp.Node.Predecessor
-	
+
 	if pred.ID == "" || hashing.SBetween(pred.ID, n, tp.Node.NodeInfo.ID, false) {
 		tp.Node.Predecessor = ni
 	}
-	
+
 	return nil
 }
 
@@ -33,8 +33,8 @@ func SendNotify(node *api.Node, other api.NodeInfoType) error {
 	// log.Printf("Notifying ring at %v with ID %v\n", node.NodeInfo, node.NodeInfo)
 
 	args.NodeInfo = node.NodeInfo
-	
-	err := call("TransportNode.Notify", &node.Successor.TCPAddr, &args, &reply)
+
+	err := call("TransportNode.Notify", &node.Successors[0].TCPAddr, &args, &reply)
 	if err != nil {
 		log.Printf("error sending Notify to %v: %v\n", node.NodeInfo, err)
 	}

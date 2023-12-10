@@ -10,35 +10,34 @@ import (
 )
 
 func stabilizeTimer(node *api.Node, ms int) {
-	// log.Printf("fin")
 	for !finished {
-		// log.Printf("fina")
 		time.Sleep(time.Millisecond * time.Duration(ms))
-
-		emptyPred := api.NodeInfoType{}
-		succs, pred, err := transport.SendAskPredecessor(&node.Successor.TCPAddr)
-		predIsEmpty := pred.ID == emptyPred.ID
-
+		x, err := transport.SendAskPredecessor(&node.Successors[0].TCPAddr)
+		// if we can't contact successor then drop it from the list.
 		if err != nil {
-			node.Successor = node.NodeInfo
-			log.Printf("error asking for predecessor in stabilize %v", err)
-		} else {
-      if predIsEmpty {
-        continue
-      }
-			x := pred
-			//newSuccs := make([]api.NodeInfoType, 4)
-			//newSuccs = append(newSuccs, node.Successor)
-			//newSuccs = append(newSuccs, succs[:2]...)
-			//node.Successors = newSuccs
-			node.Successor = succs[0]
-
-			if hashing.SBetween(node.NodeInfo.ID, x.ID, node.Successor.ID, false) {
-				node.Successor = x
+			if len(node.Successors) > 1 {
+				node.Successors = node.Successors[1:]
+			} else {
+				node.Successors = make([]api.NodeInfoType, 0)
+				node.Successors = append(node.Successors, node.NodeInfo)
 			}
-			// log.Printf("stab %v", pred)
-			transport.SendNotify(node, node.Successor)
+		} else {
+			if hashing.SBetween(node.NodeInfo.ID, x.ID, node.Successors[0].ID, true) {
+				newSuccs := make([]api.NodeInfoType, 0)
+				succs, err := transport.SendAskSuccessors(&x.TCPAddr)
+				if err != nil {
+					newSuccs = append(newSuccs, node.Successors...)
+				} else {
+					newSuccs = append(newSuccs, x)
+					newSuccs = append(newSuccs, succs...)
+				}
+				if len(newSuccs) > 4 {
+					newSuccs = newSuccs[:3]
+				}
+				node.Successors = newSuccs
+			}
 		}
+		transport.SendNotify(node, node.Successors[0])
 	}
 }
 
@@ -46,9 +45,9 @@ func checkPredecessorTimer(node *api.Node, ms int) {
 	for !finished {
 		// log.Println("===========Check Predecessor==========")
 		time.Sleep(time.Millisecond * time.Duration(ms))
-    if node.Predecessor.ID == "" {
-      continue
-    }
+		if node.Predecessor.ID == "" {
+			continue
+		}
 
 		err := transport.SendCheckPredecessor(&node.Predecessor.TCPAddr)
 

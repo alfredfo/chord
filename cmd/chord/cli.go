@@ -3,12 +3,12 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"log"
-	"github.com/alfredfo/chord/transport"
-	"strings"
-	"net"
 	"github.com/alfredfo/chord/api"
+	"github.com/alfredfo/chord/transport"
+	"log"
+	"net"
 	"os"
+	"strings"
 )
 
 func cli(bindAddr string, bindPort int) {
@@ -68,12 +68,12 @@ func cli(bindAddr string, bindPort int) {
 					continue
 				}
 				log.Printf("Value for key %v is: %v, deleted from bucket", key, val)
-      case "dump": // dump information of a given node 
-        log.Println("Trying to dump information.")
-        if len(splits) > 1 {
-          laddr := splits[1]
-          lport := splits[2]
-          addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", laddr, lport))
+			case "dump": // dump information of a given node
+				log.Println("Trying to dump information.")
+				if len(splits) > 1 {
+					laddr := splits[1]
+					lport := splits[2]
+					addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", laddr, lport))
 				} else {
 					addr, err = net.ResolveTCPAddr("tcp", fmt.Sprintf("%v:%v", bindAddr, bindPort))
 				}
@@ -82,7 +82,7 @@ func cli(bindAddr string, bindPort int) {
 					log.Println(err)
 					continue
 				}
-        log.Printf("Node info: %v", dumpstr)
+				log.Printf("Node info: %v\n", dumpstr)
 			default:
 				log.Println("not implemented")
 			}

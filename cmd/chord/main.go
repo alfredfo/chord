@@ -36,7 +36,7 @@ func NewNode(addr *net.TCPAddr) (*api.Node, error) {
 
 	return &api.Node{
 		NodeInfo:    nodeInfo,
-		Successor:   api.NodeInfoType{},
+		Successors:  make([]api.NodeInfoType, 1),
 		Predecessor: api.NodeInfoType{},
 		FingerTable: make([]api.NodeInfoType, m),
 		Bucket:      api.Bucket{},
@@ -101,8 +101,9 @@ func main() {
 	} else {
 		log.Println("Creating a new ring")
 		// if it's a new ring, pionter the predecessor and sucessor to itself
-		node.Successor = node.NodeInfo
 		node.Predecessor = node.NodeInfo
+		node.Successors = make([]api.NodeInfoType, 1)
+		node.Predecessor = node.Successors[0]
 	}
 
 	go stabilizeTimer(node, stabilizeTime)
@@ -140,12 +141,20 @@ func join(node *api.Node, joinAddr string, joinPort int) {
 	// TODO when to delete the key value pair from successor after we stored
 
 	log.Printf("asd")
-	node.Successor = succ
+
+	node.Successors[0] = succ
+	succs, err := transport.SendAskSuccessors(&node.Successors[0].TCPAddr)
+	node.Successors = append(node.Successors, succs...)
+	if len(node.Successors) > 3 {
+		node.Successors = node.Successors[:3]
+	}
+
 	//transport.SendChangeSucessor(succ, &succ.TCPAddr)
 	log.Printf("asd2")
 	// set successor and predecessor for the current node,
 	// since SendJoin only change info at the sucessor node side
-	node.Successor = succ
+	node.Successors[0] = succ
+	node.Predecessor = node.NodeInfo
 
 	// delete old data from successor
 	err2 := transport.SendDeleteOldData(node.NodeInfo, &succ.TCPAddr)

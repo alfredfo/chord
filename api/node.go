@@ -14,11 +14,12 @@ type NodeInfoType struct {
 	ID      NodeID
 	TCPAddr net.TCPAddr
 }
+
 type Node struct {
 	NodeInfo    NodeInfoType
 	FingerTable []NodeInfoType
 	Predecessor NodeInfoType
-	Successor   NodeInfoType
+	Successors  []NodeInfoType
 	Bucket      Bucket
 	Mu          sync.Mutex
 }

@@ -27,12 +27,12 @@ func (tp *TransportNode) Join(args *JoinRPCArgs, reply *JoinRPCReply) error {
 	//tp.Node.Mu.Lock()
 	//defer tp.Node.Mu.Unlock()
 
-	log.Printf("suc %v\n", tp.Node.Successor)
-	r, _ := SendFindSuccessor(args.ToJoinNode.ID, &tp.Node.Successor.TCPAddr)
+	log.Printf("suc %v\n", tp.Node.Successors[0])
+	r, _ := SendFindSuccessor(args.ToJoinNode.ID, &tp.Node.Successors[0].TCPAddr)
 	reply.Successor = r
 
 	log.Printf("Join: %v\n", tp.Node.NodeInfo)
-	log.Printf("Join: %v\n", tp.Node.Successor)
+	log.Printf("Join: %v\n", tp.Node.Successors[0])
 	return nil
 }
 
@@ -143,7 +143,7 @@ func (tp *TransportNode) ChangeSucessor(args *ChangeSuccessorRPCArgs, reply *Cha
 	tp.Node.Mu.Lock()
 	defer tp.Node.Mu.Unlock()
 
-	tp.Node.Successor = args.NewSuccessor
+	tp.Node.Successors[0] = args.NewSuccessor
 
 	return nil
 }
