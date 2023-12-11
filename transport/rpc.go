@@ -13,12 +13,13 @@ func call(rpcName string, addr *net.TCPAddr, args interface{}, reply interface{}
 		log.Fatalf("client: loadkeys: %s", err)
 	}
 	config := &tls.Config{
-		Certificates: []tls.Certificate{cert},
+		Certificates:       []tls.Certificate{cert},
 		InsecureSkipVerify: true, // For testing purposes only, consider removing this in production
 	}
-  conn, err := tls.Dial("tcp", addr.String(), config)
+	conn, err := tls.Dial("tcp", addr.String(), config)
 	if err != nil {
-		log.Fatalf("client: dial: %s", err)
+		log.Printf("client: dial: %s", err)
+		return err
 	}
 
 	defer conn.Close()
@@ -27,7 +28,8 @@ func call(rpcName string, addr *net.TCPAddr, args interface{}, reply interface{}
 	rpcClient := rpc.NewClient(conn)
 
 	if err := rpcClient.Call(rpcName, args, reply); err != nil {
-		log.Fatal("Failed to call RPC: ", err)
+		log.Printf("Failed to call RPC: ", err)
+		return err
 	}
 	return nil
 }

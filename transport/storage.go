@@ -56,6 +56,7 @@ func (tp *TransportNode) Set(args *SetRPCArgs, reply *SetRPCReply) error {
 	log.Printf("set\n")
 	tp.Node.Bucket[args.Key] = []byte(args.Value)
 	log.Printf("current val in node %v bucket: %v", tp.Node.NodeInfo, tp.Node.Bucket)
+
 	return nil
 }
 
@@ -103,22 +104,34 @@ func (tp *TransportNode) Delete(args *GetRPCArgs, reply *GetRPCReply) error {
 func SendSet(key api.Key, value api.Value, addr *net.TCPAddr, encriptKey string) error {
 	keyHash := hashing.HashStringToBigInt(key).String()
 	log.Printf("Hash value for key :%v is %v", key, keyHash)
-	succ, err := SendFindSuccessor(keyHash, addr)
+	n, err := SendFindSuccessor(keyHash, addr)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 	args := SetRPCArgs{}
-	log.Printf("kv: {%v, %v} will be stored at node: %v", key, value, succ)
+	log.Printf("kv: {%v, %v} will be stored at node: %v", key, value, n)
 	args.Key = key
-	val, err := encryptIt(value, encriptKey)
+	value, err = encryptIt(value, encriptKey)
 	if err != nil {
 		log.Println(err)
 	}
-	args.Value = val
+
+	args.Value = value
 	reply := SetRPCReply{}
 	log.Println("before call...")
-	return call("TransportNode.Set", &succ.TCPAddr, &args, &reply)
+
+	nsucc, err := SendAskSuccessors(&n.TCPAddr)
+
+	if err == nil {
+		err = call("TransportNode.Set", &nsucc[0].TCPAddr, &args, &reply)
+		if err != nil {
+			log.Printf("could not send data to n's successor, no redundancy! err: %v", err)
+		}
+	}
+
+	return call("TransportNode.Set", &n.TCPAddr, &args, &reply)
+
 }
 
 func SendGet(key api.Key, addr *net.TCPAddr, decriptKey string) (api.Value, error) {
