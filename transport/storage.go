@@ -168,6 +168,7 @@ func SendSet(key api.Key, value api.Value, addr *net.TCPAddr, encriptKey string)
 }
 
 func SendBackup(bucket api.Bucket, addr *net.TCPAddr) error {
+  log.Println("send backup")
 	// value is already encrpted 
   args := SetBucketRPCArgs{}
   args.Bucket = bucket

@@ -40,6 +40,7 @@ func NewNode(addr *net.TCPAddr) (*api.Node, error) {
 		Predecessor: api.NodeInfoType{},
 		FingerTable: make([]api.NodeInfoType, api.KeySize),
 		Bucket:      api.Bucket{},
+    Backup:      api.Bucket{},
 	}, nil
 
 }
