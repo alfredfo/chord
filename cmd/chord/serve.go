@@ -1,10 +1,10 @@
 package main
 
 import (
+	"crypto/rand"
+	"crypto/tls"
 	"github.com/alfredfo/chord/transport"
 	"log"
-  "crypto/tls"
-  "crypto/rand"
 	"net/rpc"
 )
 
@@ -16,16 +16,16 @@ func serve(tpn *transport.TransportNode) error {
 	if err != nil {
 		log.Fatalf("server: loadkeys: %s", err)
 	}
-  config := &tls.Config{
+	config := &tls.Config{
 		Certificates: []tls.Certificate{cert},
 		Rand:         rand.Reader,
 	}
-  listener, err := tls.Listen("tcp", tp.Node.NodeInfo.TCPAddr.String(), config)
-  if err != nil {
+	listener, err := tls.Listen("tcp", "0.0.0.0", config)
+	if err != nil {
 		log.Fatal(err)
 	}
 	defer listener.Close()
-  // log.Println("RPC server is running on port 1234...")
+	// log.Println("RPC server is running on port 1234...")
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
