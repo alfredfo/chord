@@ -3,12 +3,14 @@ package main
 import (
 	"crypto/rand"
 	"crypto/tls"
-	"github.com/alfredfo/chord/transport"
+	"fmt"
 	"log"
 	"net/rpc"
+
+	"github.com/alfredfo/chord/transport"
 )
 
-func serve(tpn *transport.TransportNode) error {
+func serve(tpn *transport.TransportNode, bindPort int) error {
 	if err := rpc.Register(tpn); err != nil {
 		log.Fatal("Failed to register RPC method")
 	}
@@ -20,9 +22,9 @@ func serve(tpn *transport.TransportNode) error {
 		Certificates: []tls.Certificate{cert},
 		Rand:         rand.Reader,
 	}
-	listener, err := tls.Listen("tcp", "0.0.0.0", config)
+	listener, err := tls.Listen("tcp", fmt.Sprintf("0.0.0.0:%v", bindPort), config)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("error in tls.Listen: %v\n", err)
 	}
 	defer listener.Close()
 	// log.Println("RPC server is running on port 1234...")

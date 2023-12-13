@@ -11,8 +11,8 @@ import (
 	"github.com/alfredfo/chord/api"
 	"github.com/alfredfo/chord/hashing"
 	"github.com/alfredfo/chord/transport"
-	"net/http"
 	"io"
+	"net/http"
 )
 
 var (
@@ -87,13 +87,19 @@ func main() {
 
 	tp = transport.TransportNode{}
 	bindAddr = ip
-	bindTcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", bindAddr, bindPort))
+	bindTcpAddr := net.TCPAddr{
+		IP:   net.ParseIP(ip),
+		Port: bindPort,
+	}
+	// bindTcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", bindAddr, bindPort))
+
 	if err != nil {
 		log.Printf("Failed to resolve tcp address to bind, ip:%v, port:%v, err: %v", bindAddr, bindPort, err)
 		return
 	}
 	log.Printf("manualId: %v", manualID)
-	node, err := NewNode(bindTcpAddr)
+	node, err := NewNode(&bindTcpAddr)
+
 	if err != nil {
 		log.Println(err)
 		return
@@ -110,7 +116,7 @@ func main() {
 	log.Printf("Bind address: %s\n", bindAddr)
 	log.Printf("Bind port: %d\n", bindPort)
 
-	go serve(&tp)
+	go serve(&tp, bindPort)
 
 	if joinAddr != "" {
 		join(node, joinAddr, joinPort)
