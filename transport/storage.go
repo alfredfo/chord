@@ -103,7 +103,7 @@ func (tp *TransportNode) SetBackupBucket(args *SetBucketRPCArgs, reply *SetBucke
 func (tp *TransportNode) AskBucket(args *AskBucketRPCArgs, reply *AskBucketRPCReply) error {
   tp.Node.Mu.Lock()
   defer tp.Node.Mu.Unlock()
-  log.Println("ask bucket...")
+  // log.Println("ask bucket...")
   reply.Bucket = tp.Node.Bucket
 
   return nil
