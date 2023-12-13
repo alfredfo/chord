@@ -11,6 +11,8 @@ import (
 	"github.com/alfredfo/chord/api"
 	"github.com/alfredfo/chord/hashing"
 	"github.com/alfredfo/chord/transport"
+	"net/http"
+	"io"
 )
 
 var (
@@ -65,8 +67,26 @@ func main() {
 	flag.StringVar(&manualID, "i", "", "The identifier (ID) assigned to the Chord client.")
 
 	flag.Parse()
+	req, err := http.NewRequest("GET", "https://ip.me/", nil)
+	req.Header.Add("User-Agent", "curl/8.4.0")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	defer resp.Body.Close()
+
+	if err != nil {
+		log.Printf("could not get public ip via ip.me: %v", err)
+	}
+	ipb, err := io.ReadAll(resp.Body)
+	ip := string(ipb)
+	log.Printf("%s", ip)
+
 	tp = transport.TransportNode{}
-	var err error
+	bindAddr = ip
 	bindTcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", bindAddr, bindPort))
 	if err != nil {
 		log.Printf("Failed to resolve tcp address to bind, ip:%v, port:%v, err: %v", bindAddr, bindPort, err)
