@@ -25,5 +25,6 @@ type Node struct {
 	Predecessor NodeInfoType
 	Successors  []NodeInfoType
 	Bucket      Bucket
+  Backup      Bucket
 	Mu          sync.Mutex
 }

@@ -16,7 +16,16 @@ type SetRPCArgs struct {
 	Key   api.Key
 	Value api.Value
 }
-type SetRPCReply struct{}
+type SetRPCReply struct{
+
+}
+
+type SetBucketRPCArgs struct {
+  Bucket api.Bucket
+}
+type SetBucketRPCReply struct {
+
+}
 
 type GetRPCArgs struct {
 	Key api.Key
@@ -50,11 +59,35 @@ func encryptIt(value []byte, keyPhrase string) ([]byte, error) {
 	return gcmInstance.Seal(nonce, nonce, value, nil), nil
 }
 
+
 func (tp *TransportNode) Set(args *SetRPCArgs, reply *SetRPCReply) error {
 	tp.Node.Mu.Lock()
 	defer tp.Node.Mu.Unlock()
 	log.Printf("set\n")
-	tp.Node.Bucket[args.Key] = []byte(args.Value)
+  tp.Node.Bucket[args.Key] = []byte(args.Value)
+	log.Printf("current val in node %v bucket: %v", tp.Node.NodeInfo, tp.Node.Bucket)
+
+	return nil
+}
+
+func (tp *TransportNode) SetBackup(args *SetRPCArgs, reply *SetRPCReply) error {
+	tp.Node.Mu.Lock()
+	defer tp.Node.Mu.Unlock()
+	log.Printf("setbackup\n")
+  tp.Node.Backup[args.Key] = []byte(args.Value)
+	log.Printf("current val in node %v bucket: %v", tp.Node.NodeInfo, tp.Node.Bucket)
+
+	return nil
+}
+
+// set all bucket data
+func (tp *TransportNode) SetBucket(args *SetBucketRPCArgs, reply *SetBucketRPCReply) error {
+	tp.Node.Mu.Lock()
+	defer tp.Node.Mu.Unlock()
+	log.Printf("setwhole bucket\n")
+  for k, v := range args.Bucket {
+    tp.Node.Backup[k] = v
+  }
 	log.Printf("current val in node %v bucket: %v", tp.Node.NodeInfo, tp.Node.Bucket)
 
 	return nil
@@ -122,9 +155,9 @@ func SendSet(key api.Key, value api.Value, addr *net.TCPAddr, encriptKey string)
 	log.Println("before call...")
 
 	nsucc, err := SendAskSuccessors(&n.TCPAddr)
-
+  
 	if err == nil {
-		err = call("TransportNode.Set", &nsucc[0].TCPAddr, &args, &reply)
+		err = call("TransportNode.SetBackup", &nsucc[0].TCPAddr, &args, &reply)
 		if err != nil {
 			log.Printf("could not send data to n's successor, no redundancy! err: %v", err)
 		}
@@ -133,6 +166,17 @@ func SendSet(key api.Key, value api.Value, addr *net.TCPAddr, encriptKey string)
 	return call("TransportNode.Set", &n.TCPAddr, &args, &reply)
 
 }
+
+func SendBackupToSucessor(bucket api.Bucket, addr *net.TCPAddr) error {
+	// value is already encrpted 
+  args := SetBucketRPCArgs{}
+  args.Bucket = bucket
+	reply := SetBucketRPCReply{}
+
+	return call("TransportNode.SetBucket", addr, &args, &reply)
+
+}
+
 
 func SendGet(key api.Key, addr *net.TCPAddr, decriptKey string) (api.Value, error) {
 	keyHash := hashing.HashStringToBigInt(key).String()
