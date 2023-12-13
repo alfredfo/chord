@@ -43,6 +43,7 @@ func stabilizeTimer(node *api.Node, ms int) {
 }
 
 func checkPredecessorTimer(node *api.Node, ms int) {
+  var predecessorFixed = false
 	for !finished {
 		// log.Println("===========Check Predecessor==========")
 		time.Sleep(time.Millisecond * time.Duration(ms))
@@ -55,14 +56,25 @@ func checkPredecessorTimer(node *api.Node, ms int) {
 		if err != nil {
 			log.Printf("Check predecessor failed: %v, set predecessor to nil and backup data.", err)
 			node.Predecessor = api.NodeInfoType{}
+       
       for k, v := range node.Backup {
         node.Bucket[k] = v
       }
       transport.SendBackup(node.Bucket, &node.Successors[0].TCPAddr)
-      // TODO backup predecessor
-      
-		}
-
+      predecessorFixed = true
+		} else {
+      if predecessorFixed {
+        predecessorFixed = false 
+        // TODO backup predecessor
+        predBucket, err := transport.SendAskBucket(&node.Predecessor.TCPAddr) 
+        if err == nil {
+          node.Backup = predBucket
+        } else {
+          log.Println("err ")
+          node.Backup = api.Bucket{}
+        }
+      }
+    }
 	}
 }
 

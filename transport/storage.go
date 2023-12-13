@@ -27,6 +27,13 @@ type SetBucketRPCReply struct {
 
 }
 
+type AskBucketRPCArgs struct {
+
+}
+type AskBucketRPCReply struct {
+  Bucket api.Bucket
+}
+
 type GetRPCArgs struct {
 	Key api.Key
 }
@@ -91,6 +98,15 @@ func (tp *TransportNode) SetBackupBucket(args *SetBucketRPCArgs, reply *SetBucke
 	log.Printf("current val in node %v bucket: %v", tp.Node.NodeInfo, tp.Node.Bucket)
 
 	return nil
+}
+
+func (tp *TransportNode) AskBucket(args *AskBucketRPCArgs, reply *AskBucketRPCReply) error {
+  tp.Node.Mu.Lock()
+  defer tp.Node.Mu.Unlock()
+  log.Println("ask bucket...")
+  reply.Bucket = tp.Node.Bucket
+
+  return nil
 }
 
 func decryptIt(ciphered []byte, keyPhrase string) ([]byte, error) {
@@ -175,6 +191,15 @@ func SendBackup(bucket api.Bucket, addr *net.TCPAddr) error {
 	reply := SetBucketRPCReply{}
 
 	return call("TransportNode.SetBackupBucket", addr, &args, &reply)
+}
+
+func SendAskBucket(addr *net.TCPAddr) (api.Bucket, error) {
+  args := AskBucketRPCArgs{}
+  reply := AskBucketRPCReply{}
+  
+  err := call("TransportNode.AskBucket", addr, &args, &reply)
+
+  return reply.Bucket, err
 }
 
 
