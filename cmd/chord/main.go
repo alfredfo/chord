@@ -54,6 +54,7 @@ func main() {
 		joinPort             int
 		stabilizeTime        int
 		fixFingersTime       int
+    fixBackupTime        int
 		checkPredecessorTime int
 		numSuccessors        int
 		manualID             string
@@ -65,6 +66,7 @@ func main() {
 	flag.IntVar(&joinPort, "jp", 0, "The port that an existing Chord node is bound to and listening on.")
 	flag.IntVar(&stabilizeTime, "ts", 500, "Time in milliseconds between invocations of ‘stabilize’.")
 	flag.IntVar(&fixFingersTime, "tff", 500, "Time in milliseconds between invocations of ‘fix fingers’.")
+  flag.IntVar(&fixBackupTime, "tfb", 500, "Time in milliseconds between invocations of ‘fix fingers’.")
 	flag.IntVar(&checkPredecessorTime, "tcp", 500, "Time in milliseconds between invocations of ‘check predecessor’.")
 	flag.IntVar(&numSuccessors, "r", 4, "Number of successors maintained by the Chord client.")
 	flag.StringVar(&manualID, "i", "", "The identifier (ID) assigned to the Chord client.")
@@ -134,9 +136,8 @@ func main() {
 
 	go stabilizeTimer(node, stabilizeTime)
 	go checkPredecessorTimer(node, checkPredecessorTime)
-	var next int
-	go fixFingersTimer(node, fixFingersTime, &next)
-	log.Printf("ba %v\n", bindAddr)
+	go fixFingersTimer(node, fixFingersTime)
+	go fixBackupTimer(node, stabilizeTime)
 	cli(bindAddr, bindPort)
 
 	for !finished {

@@ -78,7 +78,7 @@ func checkPredecessorTimer(node *api.Node, ms int) {
 	}
 }
 
-func fixFingersTimer(node *api.Node, ms int, next *int) {
+func fixFingersTimer(node *api.Node, ms int) {
 	for !finished {
 		time.Sleep(time.Millisecond * time.Duration(ms))
 		for n := 1; n <= api.KeySize; n++ {
@@ -89,4 +89,17 @@ func fixFingersTimer(node *api.Node, ms int, next *int) {
 			}
 		}
 	}
+}
+
+func fixBackupTimer(node *api.Node, ms int) {
+  for !finished {
+    time.Sleep(time.Millisecond * time.Duration(ms))
+
+    predBucket, err := transport.SendAskBucket(&node.Predecessor.TCPAddr)
+    if err != nil {
+      log.Printf("fixbackuptimer askbucket: %v\n", err)
+    } else {
+      node.Backup = predBucket
+    }
+  }
 }
