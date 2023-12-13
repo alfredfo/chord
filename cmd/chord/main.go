@@ -5,14 +5,16 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"strings"
 	"sync"
 	"time"
+
+	"io"
+	"net/http"
 
 	"github.com/alfredfo/chord/api"
 	"github.com/alfredfo/chord/hashing"
 	"github.com/alfredfo/chord/transport"
-	"io"
-	"net/http"
 )
 
 var (
@@ -82,7 +84,7 @@ func main() {
 		log.Printf("could not get public ip via ip.me: %v", err)
 	}
 	ipb, err := io.ReadAll(resp.Body)
-	ip := string(ipb)
+	ip := strings.ReplaceAll(string(ipb), "\n", "")
 	log.Printf("%s", ip)
 
 	tp = transport.TransportNode{}
@@ -133,7 +135,7 @@ func main() {
 	go checkPredecessorTimer(node, checkPredecessorTime)
 	var next int
 	go fixFingersTimer(node, fixFingersTime, &next)
-
+	log.Printf("ba %v\n", bindAddr)
 	cli(bindAddr, bindPort)
 
 	for !finished {
