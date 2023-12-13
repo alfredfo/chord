@@ -13,8 +13,8 @@ type DumpRPCReply struct {
 }
 
 func (tp *TransportNode) Dump(args *DumpRPCArgs, reply *DumpRPCReply) error {
-	reply.DumpString = fmt.Sprintf("tcpAdd: %v, succ: %v, pred: %v, kv stored: %v, successors: %v, fingers: %v\n",
-		tp.Node.NodeInfo, tp.Node.Successors[0], tp.Node.Predecessor, tp.Node.Bucket, tp.Node.Successors, tp.Node.FingerTable)
+	reply.DumpString = fmt.Sprintf("tcpAdd: %v\n, succ: %v\n, pred: %v\n, kv stored: %v\n, fingers: %v\n",
+		tp.Node.NodeInfo, tp.Node.Successors[0], tp.Node.Predecessor, tp.Node.Bucket, tp.Node.FingerTable)
 	return nil
 }
 

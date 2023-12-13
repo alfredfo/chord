@@ -81,7 +81,7 @@ func (tp *TransportNode) SetBackup(args *SetRPCArgs, reply *SetRPCReply) error {
 }
 
 // set all bucket data
-func (tp *TransportNode) SetBucket(args *SetBucketRPCArgs, reply *SetBucketRPCReply) error {
+func (tp *TransportNode) SetBackupBucket(args *SetBucketRPCArgs, reply *SetBucketRPCReply) error {
 	tp.Node.Mu.Lock()
 	defer tp.Node.Mu.Unlock()
 	log.Printf("setwhole bucket\n")
@@ -167,14 +167,13 @@ func SendSet(key api.Key, value api.Value, addr *net.TCPAddr, encriptKey string)
 
 }
 
-func SendBackupToSucessor(bucket api.Bucket, addr *net.TCPAddr) error {
+func SendBackup(bucket api.Bucket, addr *net.TCPAddr) error {
 	// value is already encrpted 
   args := SetBucketRPCArgs{}
   args.Bucket = bucket
 	reply := SetBucketRPCReply{}
 
-	return call("TransportNode.SetBucket", addr, &args, &reply)
-
+	return call("TransportNode.SetBackupBucket", addr, &args, &reply)
 }
 
 

@@ -58,6 +58,9 @@ func checkPredecessorTimer(node *api.Node, ms int) {
       for k, v := range node.Backup {
         node.Bucket[k] = v
       }
+      transport.SendBackup(node.Bucket, &node.Successors[0].TCPAddr)
+      // TODO backup predecessor
+      
 		}
 
 	}
