@@ -53,8 +53,11 @@ func checkPredecessorTimer(node *api.Node, ms int) {
 		err := transport.SendCheckPredecessor(&node.Predecessor.TCPAddr)
 
 		if err != nil {
-			log.Printf("Check predecessor failed: %v, set predecessor to nil.", err)
+			log.Printf("Check predecessor failed: %v, set predecessor to nil and backup data.", err)
 			node.Predecessor = api.NodeInfoType{}
+      for k, v := range node.Backup {
+        node.Bucket[k] = v
+      }
 		}
 
 	}
